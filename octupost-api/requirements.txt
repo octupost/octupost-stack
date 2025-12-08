@@ -1,0 +1,29 @@
+# FastAPI and server
+fastapi>=0.115.0
+uvicorn[standard]>=0.32.0
+python-multipart>=0.0.17
+
+# Inngest for job processing
+inngest
+
+# Fal AI SDK
+fal-client>=0.5.0
+
+# Environment and configuration
+python-dotenv>=1.0.0
+pydantic-settings>=2.6.0
+
+# Redis for job state (optional)
+redis>=5.0.0
+
+# HTTP client
+httpx>=0.28.0
+
+# Utilities
+python-ulid>=3.0.0
+
+# Supabase client
+supabase>=2.0.0
+
+# Sentry for error tracking
+sentry-sdk[fastapi]>=2.0.0

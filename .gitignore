@@ -1,0 +1,31 @@
+# Environment files (secrets)
+.env.local
+.env.development
+.env.staging
+.env.production
+
+# Keep .env.example committed as documentation
+!.env.example
+
+# Node
+node_modules/
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+venv/
+.venv/
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+.DS_Store
+
+# Build outputs
+.next/
+dist/
+build/
+
