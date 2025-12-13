@@ -1,0 +1,3312 @@
+[
+  {
+    "fps": 30,
+    "link": "https://fal.ai/models/fal-ai/longcat-video/distilled/image-to-video/720p",
+    "tier": "Basic",
+    "type": "image-to-video",
+    "price": {
+      "unit": "per_second",
+      "price_per_unit": 0.01
+    },
+    "endpoint": "fal-ai/longcat-video/distilled/image-to-video/720p",
+    "provider": "Long Cat Fast",
+    "is_active": true,
+    "parameters": [
+      {
+        "key": "prompt",
+        "type": "string",
+        "notes": "",
+        "default": "",
+        "mapping": "prompt",
+        "required": true,
+        "mapping_type": "string"
+      },
+      {
+        "key": "duration",
+        "type": "integer",
+        "notes": "Multiply second by 30 to get the number of frames",
+        "default": 4,
+        "mapping": "num_frames",
+        "required": true,
+        "mapping_type": "integer",
+        "accepted_values": {
+          "steps": 1,
+          "max_duration": 30,
+          "min_duration": 2
+        }
+      },
+      {
+        "key": "resolution",
+        "type": "string",
+        "notes": "",
+        "default": "720p",
+        "mapping": "resolution",
+        "required": true,
+        "mapping_type": "string",
+        "accepted_values": ["720p"]
+      },
+      {
+        "key": "aspect_ratio",
+        "type": "string",
+        "notes": "",
+        "default": "9:16",
+        "mapping": "aspect_ratio",
+        "required": true,
+        "mapping_type": "string",
+        "accepted_values": ["16:9", "9:16", "1:1"]
+      },
+      {
+        "key": "negative_prompt",
+        "type": "string",
+        "notes": "",
+        "default": "",
+        "mapping": "negative_prompt",
+        "required": false,
+        "mapping_type": "string"
+      },
+      {
+        "key": "image_url",
+        "type": "string",
+        "notes": "",
+        "default": "",
+        "mapping": "image_url",
+        "required": true,
+        "mapping_type": "string"
+      },
+      {
+        "key": "enhance_prompt",
+        "type": "boolean",
+        "notes": "",
+        "mapping": "enable_prompt_expansion",
+        "required": false,
+        "mapping_type": "boolean"
+      },
+      {
+        "default_values": {
+          "fps": 30,
+          "seed": 42,
+          "sync_mode": false,
+          "video_quality": "high",
+          "video_write_mode": "balanced",
+          "video_output_type": "X264 (.mp4)",
+          "num_inference_steps": 12,
+          "enable_safety_checker": true,
+          "num_refine_inference_steps": 12
+        }
+      }
+    ],
+    "parent_type": "image-to-video"
+  },
+  {
+    "fps": null,
+    "link": "https://fal.ai/models/fal-ai/minimax/speech-2.6-hd",
+    "tier": "Elite",
+    "type": "text-to-speech",
+    "price": {
+      "unit": "per_char",
+      "price_per_unit": 0.1,
+      "billing_unit_size": 1000
+    },
+    "endpoint": "fal-ai/minimax/speech-2.6-hd",
+    "provider": "Minimax",
+    "is_active": true,
+    "parameters": [
+      {
+        "key": "text",
+        "type": "string",
+        "notes": "",
+        "default": "",
+        "mapping": "text",
+        "required": true,
+        "mapping_type": "string"
+      },
+      {
+        "key": "voice",
+        "type": "string",
+        "notes": "",
+        "default": "Lovely_Girl",
+        "mapping": "voice_id",
+        "required": true,
+        "mapping_type": "string",
+        "accepted_values": [
+          "Lovely_Girl",
+          "Decent_Boy",
+          "Imposing_Manner",
+          "Elegant_Man",
+          "Abbess",
+          "Sweet_Girl_2",
+          "Exuberant_Girl",
+          "Wise_Woman",
+          "Friendly_Person",
+          "Inspirational_girl",
+          "Deep_Voice_Man",
+          "Calm_Woman",
+          "Casual_Guy",
+          "Lively_Girl",
+          "Patient_Man",
+          "Young_Knight",
+          "Determined_Man"
+        ]
+      },
+      {
+        "key": "speech_speed",
+        "type": "float",
+        "notes": "",
+        "default": 1.0,
+        "mapping": "speed",
+        "required": false,
+        "mapping_type": "float",
+        "accepted_values": {
+          "steps": 0.1,
+          "max_speed": 2,
+          "min_speed": 0.5
+        }
+      },
+      {
+        "key": "voice_emotion",
+        "type": "string",
+        "notes": "",
+        "default": "neutral",
+        "mapping": "emotion",
+        "required": false,
+        "mapping_type": "string",
+        "accepted_values": ["happy", "sad", "angry", "fearful", "disgusted", "surprised", "neutral"]
+      }
+    ],
+    "parent_type": "text-to-speech"
+  },
+  {
+    "fps": 25,
+    "link": "https://fal.ai/models/fal-ai/ltx-2/text-to-video",
+    "tier": "Plus",
+    "type": "text-to-video",
+    "price": {
+      "tier": {
+        "1080p": 0.06,
+        "1440p": 0.12,
+        "2160p": 0.24
+      },
+      "unit": "per_second",
+      "tier_field_key": "resolution"
+    },
+    "endpoint": "fal-ai/ltx-2/text-to-video",
+    "provider": "Ltx 2",
+    "is_active": true,
+    "parameters": [
+      {
+        "key": "prompt",
+        "type": "string",
+        "notes": "",
+        "default": "",
+        "mapping": "prompt",
+        "required": true,
+        "mapping_type": "string"
+      },
+      {
+        "key": "fps",
+        "type": "integer",
+        "notes": "",
+        "default": 25,
+        "mapping": "fps",
+        "required": true,
+        "mapping_type": "integer",
+        "accepted_values": [25, 50]
+      },
+      {
+        "key": "duration",
+        "type": "integer",
+        "notes": "Add s at the end of the duration",
+        "default": 6,
+        "mapping": "duration",
+        "required": true,
+        "mapping_type": "integer",
+        "accepted_values": {
+          "steps": 2,
+          "max_duration": 10,
+          "min_duration": 6
+        }
+      },
+      {
+        "key": "resolution",
+        "type": "string",
+        "notes": "",
+        "default": "1080p",
+        "mapping": "resolution",
+        "required": true,
+        "mapping_type": "string",
+        "accepted_values": ["1080p", "1440p", "2160p"]
+      },
+      {
+        "key": "aspect_ratio",
+        "type": "string",
+        "notes": "",
+        "default": "16:9",
+        "mapping": "aspect_ratio",
+        "required": true,
+        "mapping_type": "string",
+        "accepted_values": ["16:9"]
+      },
+      {
+        "key": "enable_audio",
+        "type": "boolean",
+        "notes": "",
+        "default": false,
+        "mapping": "generate_audio",
+        "required": true,
+        "mapping_type": "boolean"
+      }
+    ],
+    "parent_type": "text-to-video"
+  },
+  {
+    "fps": 30,
+    "link": "https://fal.ai/models/fal-ai/longcat-video/text-to-video/720p",
+    "tier": "Standard",
+    "type": "text-to-video",
+    "price": {
+      "unit": "per_second",
+      "price_per_unit": 0.04
+    },
+    "endpoint": "fal-ai/longcat-video/text-to-video/720p",
+    "provider": "Long Cat",
+    "is_active": true,
+    "parameters": [
+      {
+        "key": "prompt",
+        "type": "string",
+        "notes": "",
+        "default": "",
+        "mapping": "prompt",
+        "required": true,
+        "mapping_type": "string"
+      },
+      {
+        "key": "duration",
+        "type": "integer",
+        "notes": "Multiply second by 30 to get the number of frames",
+        "default": 4,
+        "mapping": "duration",
+        "required": true,
+        "mapping_type": "integer",
+        "accepted_values": {
+          "steps": 1,
+          "max_duration": 30,
+          "min_duration": 2
+        }
+      },
+      {
+        "key": "resolution",
+        "type": "string",
+        "notes": "",
+        "default": "720p",
+        "mapping": "resolution",
+        "required": true,
+        "mapping_type": "string",
+        "accepted_values": ["720p"]
+      },
+      {
+        "key": "aspect_ratio",
+        "type": "string",
+        "notes": "",
+        "default": "9:16",
+        "mapping": "aspect_ratio",
+        "required": true,
+        "mapping_type": "string",
+        "accepted_values": ["16:9", "9:16", "1:1"]
+      },
+      {
+        "key": "negative_prompt",
+        "type": "string",
+        "notes": "",
+        "default": "",
+        "mapping": "negative_prompt",
+        "required": false,
+        "mapping_type": "string"
+      },
+      {
+        "key": "enhance_prompt",
+        "type": "boolean",
+        "notes": "",
+        "mapping": "enhance_prompt",
+        "required": false,
+        "mapping_type": "boolean"
+      },
+      {
+        "default_values": {
+          "fps": 30,
+          "seed": 42,
+          "sync_mode": false,
+          "video_quality": "high",
+          "video_write_mode": "balanced",
+          "video_output_type": "X264 (.mp4)",
+          "num_inference_steps": 12,
+          "enable_safety_checker": true,
+          "num_refine_inference_steps": 12
+        }
+      }
+    ],
+    "parent_type": "text-to-video"
+  },
+  {
+    "fps": null,
+    "link": "https://fal.ai/models/beatoven/sound-effect-generation",
+    "tier": "Pro",
+    "type": "text-to-audio",
+    "price": {
+      "unit": "per_second",
+      "price_per_unit": 0.01
+    },
+    "endpoint": "beatoven/sound-effect-generation",
+    "provider": "Beatoven",
+    "is_active": true,
+    "parameters": [
+      {
+        "key": "prompt",
+        "type": "string",
+        "notes": "",
+        "default": "",
+        "mapping": "prompt",
+        "required": true,
+        "mapping_type": "string"
+      },
+      {
+        "key": "duration",
+        "type": "integer",
+        "notes": "",
+        "default": 5,
+        "mapping": "duration",
+        "required": true,
+        "mapping_type": "integer",
+        "accepted_values": {
+          "steps": 1,
+          "max_duration": 35,
+          "min_duration": 1
+        }
+      },
+      {
+        "key": "negative_prompt",
+        "type": "string",
+        "notes": "",
+        "default": "",
+        "mapping": "negative_prompt",
+        "required": false,
+        "mapping_type": "string"
+      }
+    ],
+    "parent_type": "text-to-audio"
+  },
+  {
+    "fps": null,
+    "link": "https://fal.ai/models/fal-ai/kling-video/video-to-audio",
+    "tier": "Pro",
+    "type": "video-to-audio",
+    "price": {
+      "unit": "per_request",
+      "price_per_unit": 0.035
+    },
+    "endpoint": "fal-ai/kling-video/video-to-audio",
+    "provider": "Kling",
+    "is_active": true,
+    "parameters": [
+      {
+        "key": "prompt",
+        "type": "string",
+        "notes": "",
+        "default": "",
+        "mapping": "prompt",
+        "required": true,
+        "mapping_type": "string"
+      },
+      {
+        "key": "video_url",
+        "type": "string",
+        "notes": "",
+        "default": "",
+        "mapping": "video_url",
+        "required": true,
+        "mapping_type": "string"
+      },
+      {
+        "key": "background_music_prompt",
+        "type": "string",
+        "notes": "",
+        "default": "",
+        "mapping": "background_music_prompt",
+        "required": false,
+        "mapping_type": "string"
+      },
+      {
+        "key": "asmr_mode",
+        "type": "boolean",
+        "notes": "",
+        "default": false,
+        "mapping": "asmr_mode",
+        "required": false,
+        "mapping_type": "boolean"
+      }
+    ],
+    "parent_type": "video-to-audio"
+  },
+  {
+    "fps": 24,
+    "link": "https://fal.ai/models/fal-ai/veo3.1/fast",
+    "tier": "Pro",
+    "type": "text-to-video",
+    "price": {
+      "unit": "per_second",
+      "price_per_unit": 0.1,
+      "multiplier_field_key": "enable_audio",
+      "multiplier_value": 1.5
+    },
+    "endpoint": "fal-ai/veo3.1/fast",
+    "provider": "Veo3.1 Fast",
+    "is_active": true,
+    "parameters": [
+      {
+        "key": "prompt",
+        "type": "string",
+        "notes": "",
+        "default": "",
+        "mapping": "prompt",
+        "required": true,
+        "mapping_type": "string"
+      },
+      {
+        "key": "duration",
+        "type": "integer",
+        "notes": "Add s at the end of the duration",
+        "default": 4,
+        "mapping": "duration",
+        "required": true,
+        "mapping_type": "string",
+        "accepted_values": {
+          "steps": 2,
+          "max_duration": 8,
+          "min_duration": 4
+        }
+      },
+      {
+        "key": "resolution",
+        "type": "string",
+        "notes": "",
+        "default": "720p",
+        "mapping": "resolution",
+        "required": true,
+        "mapping_type": "string",
+        "accepted_values": ["720p", "1080p"]
+      },
+      {
+        "key": "negative_prompt",
+        "type": "string",
+        "notes": "",
+        "default": "",
+        "mapping": "negative_prompt",
+        "required": false,
+        "mapping_type": "string"
+      },
+      {
+        "key": "aspect_ratio",
+        "type": "string",
+        "notes": "",
+        "default": "16:9",
+        "mapping": "aspect_ratio",
+        "required": true,
+        "mapping_type": "string",
+        "accepted_values": ["16:9", "9:16"]
+      },
+      {
+        "key": "enable_audio",
+        "type": "boolean",
+        "notes": "",
+        "mapping": "generate_audio",
+        "required": true,
+        "mapping_type": "boolean"
+      },
+      {
+        "default_values": {
+          "auto_fix": true
+        }
+      }
+    ],
+    "parent_type": "text-to-video"
+  },
+  {
+    "fps": 30,
+    "link": "https://fal.ai/models/argil/avatars/text-to-video",
+    "tier": "Pro",
+    "type": "avatar",
+    "price": {
+      "unit": "per_second",
+      "price_per_unit": 0.0225,
+      "billing_unit_size": 1,
+      "multiplier_field_key": ["transparent_background"],
+      "multiplier_value": 1.5
+    },
+    "endpoint": "argil/avatars/text-to-video",
+    "provider": "Argil",
+    "is_active": true,
+    "parameters": [
+      {
+        "key": "prompt",
+        "type": "string",
+        "notes": "",
+        "default": "",
+        "mapping": "prompt",
+        "required": true,
+        "mapping_type": "string"
+      },
+      {
+        "key": "avatar",
+        "type": "string",
+        "notes": "",
+        "default": "Lara (Masterclass)",
+        "mapping": "avatar",
+        "required": true,
+        "mapping_type": "string",
+        "accepted_values": [
+          "Lara (Masterclass)",
+          "Maria (Masterclass)",
+          "Sienna (Masterclass)",
+          "Jasmine (Masterclass)",
+          "Amara (Masterclass)",
+          "Tyler (Masterclass)",
+          "Jayse (Masterclass)",
+          "Paul (Masterclass)",
+          "Viva (Masterclass)",
+          "Alex (Masterclass)",
+          "Byron (Masterclass)",
+          "Calista (Masterclass)",
+          "Fabien (Masterclass)",
+          "Laurent (UGC)",
+          "Noemie car (UGC)"
+        ]
+      },
+      {
+        "key": "transparent_background",
+        "type": "boolean",
+        "notes": "",
+        "default": false,
+        "mapping": "remove_background",
+        "required": false,
+        "mapping_type": "boolean"
+      }
+    ],
+    "parent_type": "avatar"
+  },
+  {
+    "fps": 30,
+    "link": "https://fal.ai/models/fal-ai/longcat-video/distilled/text-to-video/720p",
+    "tier": "Basic",
+    "type": "text-to-video",
+    "price": {
+      "unit": "per_second",
+      "price_per_unit": 0.01
+    },
+    "endpoint": "fal-ai/longcat-video/distilled/text-to-video/720p",
+    "provider": "Long Cat Fast",
+    "is_active": true,
+    "parameters": [
+      {
+        "key": "prompt",
+        "type": "string",
+        "notes": "",
+        "default": "",
+        "mapping": "prompt",
+        "required": true,
+        "mapping_type": "string"
+      },
+      {
+        "key": "duration",
+        "type": "integer",
+        "notes": "Multiply second by 30 to get the number of frames",
+        "default": 4,
+        "mapping": "duration",
+        "required": true,
+        "mapping_type": "integer",
+        "accepted_values": {
+          "steps": 1,
+          "max_duration": 30,
+          "min_duration": 2
+        }
+      },
+      {
+        "key": "resolution",
+        "type": "string",
+        "notes": "",
+        "default": "720p",
+        "mapping": "resolution",
+        "required": true,
+        "mapping_type": "string",
+        "accepted_values": ["720p"]
+      },
+      {
+        "key": "aspect_ratio",
+        "type": "string",
+        "notes": "",
+        "default": "9:16",
+        "mapping": "aspect_ratio",
+        "required": true,
+        "mapping_type": "string",
+        "accepted_values": ["16:9", "9:16", "1:1"]
+      },
+      {
+        "key": "negative_prompt",
+        "type": "string",
+        "notes": "",
+        "default": "",
+        "mapping": "negative_prompt",
+        "required": false,
+        "mapping_type": "string"
+      },
+      {
+        "key": "enhance_prompt",
+        "type": "boolean",
+        "notes": "",
+        "mapping": "enhance_prompt",
+        "required": false,
+        "mapping_type": "boolean"
+      },
+      {
+        "default_values": {
+          "fps": 30,
+          "seed": 42,
+          "sync_mode": false,
+          "video_quality": "high",
+          "video_write_mode": "balanced",
+          "video_output_type": "X264 (.mp4)",
+          "num_inference_steps": 12,
+          "enable_safety_checker": true,
+          "num_refine_inference_steps": 12
+        }
+      }
+    ],
+    "parent_type": "text-to-video"
+  },
+  {
+    "fps": null,
+    "link": "https://fal.ai/models/fal-ai/mmaudio-v2",
+    "tier": "Basic",
+    "type": "video-to-audio",
+    "price": {
+      "unit": "per_second",
+      "price_per_unit": 0.001
+    },
+    "endpoint": "fal-ai/mmaudio-v2",
+    "provider": "MM Audio 2",
+    "is_active": true,
+    "parameters": [
+      {
+        "key": "prompt",
+        "type": "string",
+        "notes": "",
+        "default": "",
+        "mapping": "prompt",
+        "required": true,
+        "mapping_type": "string"
+      },
+      {
+        "key": "video_url",
+        "type": "string",
+        "notes": "",
+        "default": "",
+        "mapping": "video_url",
+        "required": true,
+        "mapping_type": "string"
+      },
+      {
+        "key": "duration",
+        "type": "integer",
+        "notes": "",
+        "default": 10,
+        "mapping": "duration",
+        "required": false,
+        "mapping_type": "integer",
+        "accepted_values": {
+          "steps": 1,
+          "max_duration": 30,
+          "min_duration": 1
+        }
+      }
+    ],
+    "parent_type": "video-to-audio"
+  },
+  {
+    "fps": null,
+    "link": "https://fal.ai/models/beatoven/music-generation",
+    "tier": "Pro",
+    "type": "text-to-music",
+    "price": {
+      "unit": "per_second",
+      "price_per_unit": 0.01
+    },
+    "endpoint": "beatoven/music-generation",
+    "provider": "Beatoven",
+    "is_active": true,
+    "parameters": [
+      {
+        "key": "prompt",
+        "type": "string",
+        "notes": "",
+        "default": "",
+        "mapping": "prompt",
+        "required": true,
+        "mapping_type": "string"
+      },
+      {
+        "key": "duration",
+        "type": "integer",
+        "notes": "",
+        "default": 30,
+        "mapping": "duration",
+        "required": true,
+        "mapping_type": "integer",
+        "accepted_values": {
+          "steps": 1,
+          "max_duration": 150,
+          "min_duration": 1
+        }
+      },
+      {
+        "key": "negative_prompt",
+        "type": "string",
+        "notes": "",
+        "default": "",
+        "mapping": "negative_prompt",
+        "required": false,
+        "mapping_type": "string"
+      }
+    ],
+    "parent_type": "text-to-music"
+  },
+  {
+    "fps": null,
+    "link": "https://fal.ai/models/fal-ai/gpt-image-1-mini",
+    "tier": "Standard",
+    "type": "text-to-image",
+    "price": {
+      "unit": "per_request",
+      "price_per_unit": 0.02
+    },
+    "endpoint": "fal-ai/gpt-image-1-mini",
+    "provider": "GPT Mini",
+    "is_active": true,
+    "parameters": [
+      {
+        "key": "prompt",
+        "type": "string",
+        "notes": "",
+        "default": "",
+        "mapping": "prompt",
+        "required": true,
+        "mapping_type": "string"
+      },
+      {
+        "key": "background",
+        "type": "string",
+        "notes": "",
+        "default": "auto",
+        "mapping": "background",
+        "required": false,
+        "mapping_type": "string",
+        "accepted_values": ["auto", "transparent", "opaque"]
+      },
+      {
+        "key": "resolution",
+        "type": "string",
+        "notes": "",
+        "default": "auto",
+        "mapping": "quality",
+        "required": false,
+        "mapping_type": "string",
+        "accepted_values": ["auto", "low", "medium", "high"]
+      },
+      {
+        "key": "aspect_ratio",
+        "type": "string",
+        "notes": "",
+        "default": "auto",
+        "mapping": "size",
+        "required": false,
+        "mapping_type": "string",
+        "accepted_values": ["auto", "1024x1024", "1024x1536", "1536x1024"]
+      }
+    ],
+    "parent_type": "text-to-image"
+  },
+  {
+    "fps": null,
+    "link": "https://fal.ai/models/mirelo-ai/sfx-v1.5/video-to-audio",
+    "tier": "Pro",
+    "type": "video-to-audio",
+    "price": {
+      "unit": "per_second",
+      "price_per_unit": 0.01
+    },
+    "endpoint": "mirelo-ai/sfx-v1.5/video-to-audio",
+    "provider": "Mirelo",
+    "is_active": true,
+    "parameters": [
+      {
+        "key": "prompt",
+        "type": "string",
+        "notes": "",
+        "default": "",
+        "mapping": "prompt",
+        "required": true,
+        "mapping_type": "string"
+      },
+      {
+        "key": "video_url",
+        "type": "string",
+        "notes": "",
+        "default": "",
+        "mapping": "video_url",
+        "required": true,
+        "mapping_type": "string"
+      },
+      {
+        "key": "duration",
+        "type": "integer",
+        "notes": "",
+        "default": 5,
+        "mapping": "duration",
+        "required": false,
+        "mapping_type": "integer",
+        "accepted_values": {
+          "steps": 1,
+          "max_duration": 10,
+          "min_duration": 1
+        }
+      }
+    ],
+    "parent_type": "video-to-audio"
+  },
+  {
+    "fps": 24,
+    "link": "https://fal.ai/models/fal-ai/minimax/hailuo-2.3/standard/text-to-video",
+    "tier": "Plus",
+    "type": "text-to-video",
+    "price": {
+      "tier": {
+        "6": 0.28,
+        "10": 0.56
+      },
+      "unit": "per_request",
+      "tier_field_key": "duration"
+    },
+    "endpoint": "fal-ai/minimax/hailuo-2.3/standard/text-to-video",
+    "provider": "Hailuo",
+    "is_active": true,
+    "parameters": [
+      {
+        "key": "prompt",
+        "type": "string",
+        "notes": "",
+        "default": "",
+        "mapping": "prompt",
+        "required": true,
+        "mapping_type": "string"
+      },
+      {
+        "key": "duration",
+        "type": "integer",
+        "notes": "Value type is string",
+        "default": 6,
+        "mapping": "duration",
+        "required": true,
+        "mapping_type": "string",
+        "accepted_values": {
+          "steps": 4,
+          "max_duration": 10,
+          "min_duration": 6
+        }
+      },
+      {
+        "key": "resolution",
+        "type": "string",
+        "notes": "",
+        "default": "768p",
+        "mapping": "resolution",
+        "required": true,
+        "mapping_type": "string",
+        "accepted_values": ["768p"]
+      },
+      {
+        "key": "aspect_ratio",
+        "type": "string",
+        "notes": "",
+        "default": "16:9",
+        "mapping": "aspect_ratio",
+        "required": true,
+        "mapping_type": "string",
+        "accepted_values": ["16:9"]
+      },
+      {
+        "key": "enhance_prompt",
+        "type": "boolean",
+        "notes": "",
+        "default": false,
+        "mapping": "prompt_optimizer",
+        "required": false,
+        "mapping_type": "boolean"
+      }
+    ],
+    "parent_type": "text-to-video"
+  },
+  {
+    "fps": 24,
+    "link": "https://fal.ai/models/fal-ai/kling-video/v2.6/pro/image-to-video",
+    "tier": "Elite",
+    "type": "image-to-video",
+    "price": {
+      "unit": "per_second",
+      "price_per_unit": 0.07,
+      "multiplier_field_key": "enable_audio",
+      "multiplier_value": 2
+    },
+    "endpoint": "fal-ai/kling-video/v2.6/pro/image-to-video",
+    "provider": "Kling",
+    "is_active": true,
+    "parameters": [
+      {
+        "key": "image_url",
+        "type": "string",
+        "notes": "",
+        "default": "",
+        "mapping": "image_url",
+        "required": true,
+        "mapping_type": "string"
+      },
+      {
+        "key": "duration",
+        "type": "integer",
+        "notes": "Add s at the end of the duration",
+        "default": 5,
+        "mapping": "duration",
+        "required": true,
+        "mapping_type": "integer",
+        "accepted_values": {
+          "steps": 5,
+          "max_duration": 10,
+          "min_duration": 5
+        }
+      },
+      {
+        "key": "resolution",
+        "type": "string",
+        "notes": "do not include the resolution in the payload",
+        "default": "1080p",
+        "mapping": "resolution",
+        "required": true,
+        "mapping_type": "string",
+        "accepted_values": ["1080p"]
+      },
+      {
+        "key": "aspect_ratio",
+        "type": "string",
+        "notes": "do not include the aspect ratio in the payload",
+        "default": "16:9",
+        "mapping": "aspect_ratio",
+        "required": true,
+        "mapping_type": "string",
+        "accepted_values": ["1:1", "16:9", "9:16"]
+      },
+      {
+        "key": "negative_prompt",
+        "type": "string",
+        "notes": "This is the negative prompt for the video",
+        "default": "",
+        "mapping": "negative_prompt",
+        "required": true,
+        "mapping_type": "string"
+      },
+      {
+        "key": "enable_audio",
+        "type": "boolean",
+        "notes": "",
+        "default": false,
+        "mapping": "generate_audio",
+        "required": true,
+        "mapping_type": "boolean"
+      }
+    ],
+    "parent_type": "image-to-video"
+  },
+  {
+    "fps": 24,
+    "link": "https://fal.ai/models/fal-ai/veo3.1/fast/image-to-video",
+    "tier": "Pro",
+    "type": "image-to-video",
+    "price": {
+      "unit": "per_second",
+      "price_per_unit": 0.1,
+      "multiplier_field_key": "enable_audio",
+      "multiplier_value": 1.5
+    },
+    "endpoint": "fal-ai/veo3.1/fast/image-to-video",
+    "provider": "Veo3.1 Fast",
+    "is_active": true,
+    "parameters": [
+      {
+        "key": "prompt",
+        "type": "string",
+        "notes": "",
+        "default": "",
+        "mapping": "prompt",
+        "required": true,
+        "mapping_type": "string"
+      },
+      {
+        "key": "image_url",
+        "type": "string",
+        "notes": "",
+        "default": "",
+        "mapping": "image_url",
+        "required": true,
+        "mapping_type": "string"
+      },
+      {
+        "key": "duration",
+        "type": "integer",
+        "notes": "Add s at the end of the duration",
+        "default": 4,
+        "mapping": "duration",
+        "required": true,
+        "mapping_type": "string",
+        "accepted_values": {
+          "steps": 2,
+          "max_duration": 8,
+          "min_duration": 4
+        }
+      },
+      {
+        "key": "resolution",
+        "type": "string",
+        "notes": "",
+        "default": "1080p",
+        "mapping": "resolution",
+        "required": true,
+        "mapping_type": "string",
+        "accepted_values": ["720p", "1080p"]
+      },
+      {
+        "key": "aspect_ratio",
+        "type": "string",
+        "notes": "",
+        "default": "auto",
+        "mapping": "aspect_ratio",
+        "required": true,
+        "mapping_type": "string",
+        "accepted_values": ["auto", "16:9", "9:16"]
+      },
+      {
+        "key": "enable_audio",
+        "type": "boolean",
+        "notes": "",
+        "mapping": "generate_audio",
+        "required": true,
+        "mapping_type": "boolean"
+      },
+      {
+        "default_values": {
+          "auto_fix": true
+        }
+      }
+    ],
+    "parent_type": "image-to-video"
+  },
+  {
+    "fps": 30,
+    "link": "https://fal.ai/models/fal-ai/sora-2/text-to-video/pro",
+    "tier": "Elite",
+    "type": "text-to-video",
+    "price": {
+      "tier": {
+        "720p": 0.3,
+        "1080p": 0.5
+      },
+      "unit": "per_second",
+      "tier_field_key": "resolution"
+    },
+    "endpoint": "fal-ai/sora-2/text-to-video/pro",
+    "provider": "Sora 2",
+    "is_active": true,
+    "parameters": [
+      {
+        "key": "prompt",
+        "type": "string",
+        "notes": "",
+        "default": "",
+        "mapping": "prompt",
+        "required": true,
+        "mapping_type": "string"
+      },
+      {
+        "key": "duration",
+        "type": "integer",
+        "notes": "Add s at the end of the duration",
+        "default": 4,
+        "mapping": "duration",
+        "required": true,
+        "mapping_type": "integer",
+        "accepted_values": {
+          "steps": 4,
+          "max_duration": 12,
+          "min_duration": 4
+        }
+      },
+      {
+        "key": "resolution",
+        "type": "string",
+        "notes": "",
+        "default": "1080p",
+        "mapping": "resolution",
+        "required": true,
+        "mapping_type": "string",
+        "accepted_values": ["720p", "1080p"]
+      },
+      {
+        "key": "aspect_ratio",
+        "type": "string",
+        "notes": "",
+        "default": "16:9",
+        "mapping": "aspect_ratio",
+        "required": true,
+        "mapping_type": "string",
+        "accepted_values": ["16:9", "9:16"]
+      },
+      {
+        "default_values": {
+          "delete_video": true
+        }
+      }
+    ],
+    "parent_type": "text-to-video"
+  },
+  {
+    "fps": 25,
+    "link": "https://fal.ai/models/fal-ai/ltx-2/text-to-video/fast",
+    "tier": "Standard",
+    "type": "text-to-video",
+    "price": {
+      "tier": {
+        "1080p": 0.04,
+        "1440p": 0.08,
+        "2160p": 0.16
+      },
+      "unit": "per_second",
+      "tier_field_key": "resolution"
+    },
+    "endpoint": "fal-ai/ltx-2/text-to-video/fast",
+    "provider": "Ltx 2 Fast",
+    "is_active": true,
+    "parameters": [
+      {
+        "key": "prompt",
+        "type": "string",
+        "notes": "",
+        "default": "",
+        "mapping": "prompt",
+        "required": true,
+        "mapping_type": "string"
+      },
+      {
+        "key": "fps",
+        "type": "integer",
+        "notes": "",
+        "default": 25,
+        "mapping": "fps",
+        "required": true,
+        "mapping_type": "integer",
+        "accepted_values": [25, 50]
+      },
+      {
+        "key": "duration",
+        "type": "integer",
+        "notes": "Add s at the end of the duration",
+        "default": 6,
+        "mapping": "duration",
+        "required": true,
+        "mapping_type": "integer",
+        "accepted_values": {
+          "steps": 2,
+          "max_duration": 20,
+          "min_duration": 6
+        }
+      },
+      {
+        "key": "resolution",
+        "type": "string",
+        "notes": "",
+        "default": "1080p",
+        "mapping": "resolution",
+        "required": true,
+        "mapping_type": "string",
+        "accepted_values": ["1080p", "1440p", "2160p"]
+      },
+      {
+        "key": "aspect_ratio",
+        "type": "string",
+        "notes": "",
+        "default": "16:9",
+        "mapping": "aspect_ratio",
+        "required": true,
+        "mapping_type": "string",
+        "accepted_values": ["16:9"]
+      },
+      {
+        "key": "enable_audio",
+        "type": "boolean",
+        "notes": "",
+        "default": false,
+        "mapping": "generate_audio",
+        "required": true,
+        "mapping_type": "boolean"
+      }
+    ],
+    "parent_type": "text-to-video"
+  },
+  {
+    "fps": 25,
+    "link": "https://fal.ai/models/fal-ai/ltx-2/image-to-video/fast",
+    "tier": "Standard",
+    "type": "image-to-video",
+    "price": {
+      "tier": {
+        "1080p": 0.04,
+        "1440p": 0.08,
+        "2160p": 0.16
+      },
+      "unit": "per_second",
+      "tier_field_key": "resolution"
+    },
+    "endpoint": "fal-ai/ltx-2/image-to-video/fast",
+    "provider": "Ltx 2 Fast",
+    "is_active": true,
+    "parameters": [
+      {
+        "key": "prompt",
+        "type": "string",
+        "notes": "",
+        "default": "",
+        "mapping": "prompt",
+        "required": true,
+        "mapping_type": "string"
+      },
+      {
+        "key": "image_url",
+        "type": "string",
+        "notes": "",
+        "default": "",
+        "mapping": "image_url",
+        "required": true,
+        "mapping_type": "string"
+      },
+      {
+        "key": "fps",
+        "type": "integer",
+        "notes": "",
+        "default": 25,
+        "mapping": "fps",
+        "required": true,
+        "mapping_type": "integer",
+        "accepted_values": [25, 50]
+      },
+      {
+        "key": "duration",
+        "type": "integer",
+        "notes": "Add s at the end of the duration",
+        "default": 6,
+        "mapping": "duration",
+        "required": true,
+        "mapping_type": "integer",
+        "accepted_values": {
+          "steps": 2,
+          "max_duration": 20,
+          "min_duration": 6
+        }
+      },
+      {
+        "key": "resolution",
+        "type": "string",
+        "notes": "",
+        "default": "1080p",
+        "mapping": "resolution",
+        "required": true,
+        "mapping_type": "string",
+        "accepted_values": ["1080p", "1440p", "2160p"]
+      },
+      {
+        "key": "aspect_ratio",
+        "type": "string",
+        "notes": "",
+        "default": "16:9",
+        "mapping": "aspect_ratio",
+        "required": true,
+        "mapping_type": "string",
+        "accepted_values": ["16:9"]
+      },
+      {
+        "key": "enable_audio",
+        "type": "boolean",
+        "notes": "",
+        "default": false,
+        "mapping": "generate_audio",
+        "required": true,
+        "mapping_type": "boolean"
+      }
+    ],
+    "parent_type": "image-to-video"
+  },
+  {
+    "fps": 24,
+    "link": "https://fal.ai/models/fal-ai/kling-video/o1/reference-to-video",
+    "tier": "Pro",
+    "type": "reference-to-video",
+    "price": {
+      "unit": "per_second",
+      "price_per_unit": 0.112
+    },
+    "endpoint": "fal-ai/kling-video/o1/reference-to-video",
+    "provider": "Kling",
+    "is_active": true,
+    "parameters": [
+      {
+        "key": "prompt",
+        "type": "string",
+        "notes": "",
+        "default": "",
+        "mapping": "prompt",
+        "required": true,
+        "mapping_type": "string"
+      },
+      {
+        "key": "duration",
+        "type": "integer",
+        "notes": "",
+        "default": 5,
+        "mapping": "duration",
+        "required": true,
+        "mapping_type": "integer",
+        "accepted_values": {
+          "steps": 5,
+          "max_duration": 10,
+          "min_duration": 5
+        }
+      },
+      {
+        "key": "resolution",
+        "type": "string",
+        "notes": "",
+        "default": "1080p",
+        "mapping": "resolution",
+        "required": true,
+        "mapping_type": "string",
+        "accepted_values": ["1080p"]
+      },
+      {
+        "key": "aspect_ratio",
+        "type": "string",
+        "notes": "do not include the aspect ratio in the payload",
+        "default": "16:9",
+        "mapping": "aspect_ratio",
+        "required": true,
+        "mapping_type": "string",
+        "accepted_values": ["1:1", "16:9", "9:16"]
+      },
+      {
+        "key": "elements[0].frontal_image_url",
+        "type": "image",
+        "notes": "This is the main character front view",
+        "default": "",
+        "mapping": "elements[0].frontal_image_url",
+        "required": true,
+        "mapping_type": "image"
+      },
+      {
+        "key": "elements[0].reference_image_urls",
+        "type": "image_array",
+        "notes": "This is the main character other angles",
+        "default": "",
+        "mapping": "elements[0].reference_image_urls",
+        "required": false,
+        "mapping_type": "image_array"
+      },
+      {
+        "key": "elements[1].frontal_image_url",
+        "type": "image",
+        "notes": "This is the second character front view",
+        "default": "",
+        "mapping": "elements[1].frontal_image_url",
+        "required": false,
+        "mapping_type": "image"
+      },
+      {
+        "key": "elements[1].reference_image_urls",
+        "type": "image_array",
+        "notes": "This is the second character other angles",
+        "default": "",
+        "mapping": "elements[1].reference_image_urls",
+        "required": false,
+        "mapping_type": "image_array"
+      },
+      {
+        "key": "image_urls[0]",
+        "type": "image",
+        "notes": "This is the style/look reference",
+        "default": "",
+        "mapping": "image_urls[0]",
+        "required": false,
+        "mapping_type": "image"
+      },
+      {
+        "key": "image_urls[1]",
+        "type": "image",
+        "notes": "This is the background/environment",
+        "default": "",
+        "mapping": "image_urls[1]",
+        "required": false,
+        "mapping_type": "image"
+      }
+    ],
+    "parent_type": "image-to-video"
+  },
+  {
+    "fps": 30,
+    "link": "https://fal.ai/models/fal-ai/sora-2/video-to-video/remix/api#schema-input",
+    "tier": "Pro",
+    "type": "retake",
+    "price": {
+      "unit": "per_second",
+      "price_per_unit": 0.1
+    },
+    "endpoint": "fal-ai/sora-2/video-to-video/remix",
+    "provider": "Sora 2",
+    "is_active": true,
+    "parameters": [
+      {
+        "key": "prompt",
+        "type": "string",
+        "notes": "",
+        "default": "",
+        "mapping": "prompt",
+        "required": true,
+        "mapping_type": "string"
+      },
+      {
+        "key": "video_url",
+        "type": "string",
+        "notes": "",
+        "default": "",
+        "mapping": "video_url",
+        "required": true,
+        "mapping_type": "string"
+      }
+    ],
+    "parent_type": "retake"
+  },
+  {
+    "fps": null,
+    "link": "https://fal.ai/models/fal-ai/stable-audio-25/text-to-audio",
+    "tier": "Pro",
+    "type": "text-to-music",
+    "price": {
+      "unit": "per_request",
+      "price_per_unit": 0.2
+    },
+    "endpoint": "fal-ai/stable-audio-25/text-to-audio",
+    "provider": "Stable Audio",
+    "is_active": true,
+    "parameters": [
+      {
+        "key": "prompt",
+        "type": "string",
+        "notes": "",
+        "default": "",
+        "mapping": "prompt",
+        "required": true,
+        "mapping_type": "string"
+      },
+      {
+        "key": "duration",
+        "type": "integer",
+        "notes": "",
+        "default": 30,
+        "mapping": "seconds_total",
+        "required": true,
+        "mapping_type": "integer",
+        "accepted_values": {
+          "steps": 1,
+          "max_duration": 190,
+          "min_duration": 1
+        }
+      }
+    ],
+    "parent_type": "text-to-music"
+  },
+  {
+    "fps": 24,
+    "link": "https://fal.ai/models/fal-ai/veo3.1/reference-to-video",
+    "tier": "Elite",
+    "type": "reference-to-video",
+    "price": {
+      "unit": "per_second",
+      "price_per_unit": 0.2,
+      "multiplier_field_key": "enable_audio",
+      "multiplier_value": 2
+    },
+    "endpoint": "fal-ai/veo3.1/reference-to-video",
+    "provider": "Veo3.1",
+    "is_active": true,
+    "parameters": [
+      {
+        "key": "prompt",
+        "type": "string",
+        "notes": "",
+        "default": "",
+        "mapping": "prompt",
+        "required": true,
+        "mapping_type": "string"
+      },
+      {
+        "key": "image_urls[0]",
+        "type": "string",
+        "notes": "",
+        "default": "",
+        "mapping": "image_urls[0]",
+        "required": true,
+        "mapping_type": "string"
+      },
+      {
+        "key": "image_urls[1]",
+        "type": "string",
+        "notes": "",
+        "default": "",
+        "mapping": "image_urls[1]",
+        "required": false,
+        "mapping_type": "string"
+      },
+      {
+        "key": "image_urls[2]",
+        "type": "string",
+        "notes": "",
+        "default": "",
+        "mapping": "image_urls[2]",
+        "required": false,
+        "mapping_type": "string"
+      },
+      {
+        "key": "duration",
+        "type": "integer",
+        "notes": "Add s at the end of the duration",
+        "default": 8,
+        "mapping": "duration",
+        "required": true,
+        "mapping_type": "string",
+        "accepted_values": {
+          "steps": 0,
+          "max_duration": 8,
+          "min_duration": 8
+        }
+      },
+      {
+        "key": "resolution",
+        "type": "string",
+        "notes": "",
+        "default": "720p",
+        "mapping": "resolution",
+        "required": true,
+        "mapping_type": "string",
+        "accepted_values": ["720p", "1080p"]
+      },
+      {
+        "key": "aspect_ratio",
+        "type": "string",
+        "notes": "",
+        "default": "16:9",
+        "mapping": "aspect_ratio",
+        "required": true,
+        "mapping_type": "string",
+        "accepted_values": ["16:9"]
+      },
+      {
+        "key": "enable_audio",
+        "type": "boolean",
+        "notes": "",
+        "default": false,
+        "mapping": "generate_audio",
+        "required": true,
+        "mapping_type": "boolean"
+      },
+      {
+        "key": "negative_prompt",
+        "type": "string",
+        "notes": "This is the negative prompt for the video",
+        "default": "",
+        "mapping": "negative_prompt",
+        "required": true,
+        "mapping_type": "string"
+      },
+      {
+        "default_values": {
+          "auto_fix": true
+        }
+      }
+    ],
+    "parent_type": "image-to-video"
+  },
+  {
+    "fps": 48,
+    "link": "https://fal.ai/models/fal-ai/kling-video/ai-avatar/v2/pro",
+    "tier": "Elite",
+    "type": "avatar",
+    "price": {
+      "unit": "per_second",
+      "price_per_unit": 0.115,
+      "billing_unit_size": 1
+    },
+    "endpoint": "fal-ai/kling-video/ai-avatar/v2/pro",
+    "provider": "Kling Pro",
+    "is_active": true,
+    "parameters": [
+      {
+        "key": "prompt",
+        "type": "string",
+        "notes": "",
+        "default": "",
+        "mapping": "prompt",
+        "required": false,
+        "mapping_type": "string"
+      },
+      {
+        "key": "image_url",
+        "type": "string",
+        "notes": "Avatar image",
+        "default": "",
+        "mapping": "image_url",
+        "required": true,
+        "mapping_type": "string"
+      },
+      {
+        "key": "audio_url",
+        "type": "string",
+        "notes": "Audio file for lip sync",
+        "default": "",
+        "mapping": "audio_url",
+        "required": true,
+        "mapping_type": "string"
+      }
+    ],
+    "parent_type": "avatar"
+  },
+  {
+    "fps": 30,
+    "link": "https://fal.ai/models/fal-ai/sora-2/image-to-video/pro",
+    "tier": "Elite",
+    "type": "image-to-video",
+    "price": {
+      "tier": {
+        "720p": 0.3,
+        "1080p": 0.5
+      },
+      "unit": "per_second",
+      "tier_field_key": "resolution"
+    },
+    "endpoint": "fal-ai/sora-2/image-to-video/pro",
+    "provider": "Sora 2",
+    "is_active": true,
+    "parameters": [
+      {
+        "key": "image_url",
+        "type": "string",
+        "notes": "",
+        "default": "",
+        "mapping": "image_url",
+        "required": true,
+        "mapping_type": "string"
+      },
+      {
+        "key": "duration",
+        "type": "integer",
+        "notes": "Add s at the end of the duration",
+        "default": 4,
+        "mapping": "duration",
+        "required": true,
+        "mapping_type": "integer",
+        "accepted_values": {
+          "steps": 4,
+          "max_duration": 12,
+          "min_duration": 4
+        }
+      },
+      {
+        "key": "resolution",
+        "type": "string",
+        "notes": "",
+        "default": "1080p",
+        "mapping": "resolution",
+        "required": true,
+        "mapping_type": "string",
+        "accepted_values": ["720p", "1080p"]
+      },
+      {
+        "key": "aspect_ratio",
+        "type": "string",
+        "notes": "",
+        "default": "auto",
+        "mapping": "aspect_ratio",
+        "required": true,
+        "mapping_type": "string",
+        "accepted_values": ["16:9", "9:16", "auto"]
+      },
+      {
+        "default_values": {
+          "delete_video": true
+        }
+      }
+    ],
+    "parent_type": "image-to-video"
+  },
+  {
+    "fps": null,
+    "link": "https://fal.ai/models/fal-ai/kling-video/v1/tts",
+    "tier": "Standard",
+    "type": "text-to-speech",
+    "price": {
+      "unit": "per_request",
+      "price_per_unit": 0.007
+    },
+    "endpoint": "fal-ai/kling-video/v1/tts",
+    "provider": "Kling",
+    "is_active": true,
+    "parameters": [
+      {
+        "key": "text",
+        "type": "string",
+        "notes": "",
+        "default": "",
+        "mapping": "text",
+        "required": true,
+        "mapping_type": "string"
+      },
+      {
+        "key": "voice",
+        "type": "string",
+        "notes": "",
+        "default": "oversea_male1",
+        "mapping": "voice_id",
+        "required": true,
+        "mapping_type": "string",
+        "accepted_values": [
+          "genshin_vindi2",
+          "zhinen_xuesheng",
+          "AOT",
+          "ai_shatang",
+          "genshin_klee2",
+          "genshin_kirara",
+          "ai_kaiya",
+          "oversea_male1",
+          "ai_chenjiahao_712",
+          "girlfriend_4_speech02",
+          "chat1_female_new-3",
+          "chat_0407_5-1",
+          "cartoon-boy-07",
+          "uk_boy1",
+          "cartoon-girl-01",
+          "PeppaPig_platform",
+          "ai_huangzhong_712",
+          "ai_huangyaoshi_712",
+          "ai_laoguowang_712",
+          "chengshu_jiejie",
+          "you_pingjing",
+          "calm_story1",
+          "uk_man2",
+          "laopopo_speech02",
+          "heainainai_speech02",
+          "reader_en_m-v1",
+          "commercial_lady_en_f-v1",
+          "tiyuxi_xuedi",
+          "tiexin_nanyou",
+          "girlfriend_1_speech02",
+          "girlfriend_2_speech02",
+          "zhuxi_speech02",
+          "uk_oldman3",
+          "dongbeilaotie_speech02",
+          "chongqingxiaohuo_speech02",
+          "chuanmeizi_speech02",
+          "chaoshandashu_speech02",
+          "ai_taiwan_man2_speech02",
+          "xianzhanggui_speech02",
+          "tianjinjiejie_speech02",
+          "diyinnansang_DB_CN_M_04-v2",
+          "yizhipiannan-v1",
+          "guanxiaofang-v2",
+          "tianmeixuemei-v1",
+          "daopianyansang-v1",
+          "mengwa-v1"
+        ]
+      },
+      {
+        "key": "speech_speed",
+        "type": "float",
+        "notes": "",
+        "default": 1.0,
+        "mapping": "voice_speed",
+        "required": false,
+        "mapping_type": "float",
+        "accepted_values": {
+          "steps": 0.1,
+          "max_speed": 2,
+          "min_speed": 0.8
+        }
+      }
+    ],
+    "parent_type": "text-to-speech"
+  },
+  {
+    "fps": 30,
+    "link": "https://fal.ai/models/fal-ai/sora-2/image-to-video",
+    "tier": "Pro",
+    "type": "image-to-video",
+    "price": {
+      "unit": "per_second",
+      "price_per_unit": 0.1
+    },
+    "endpoint": "fal-ai/sora-2/image-to-video",
+    "provider": "Sora 2",
+    "is_active": true,
+    "parameters": [
+      {
+        "key": "image_url",
+        "type": "string",
+        "notes": "",
+        "default": "",
+        "mapping": "image_url",
+        "required": true,
+        "mapping_type": "string"
+      },
+      {
+        "key": "duration",
+        "type": "integer",
+        "notes": "Add s at the end of the duration",
+        "default": 4,
+        "mapping": "duration",
+        "required": true,
+        "mapping_type": "integer",
+        "accepted_values": {
+          "steps": 4,
+          "max_duration": 12,
+          "min_duration": 4
+        }
+      },
+      {
+        "key": "resolution",
+        "type": "string",
+        "notes": "",
+        "default": "720p",
+        "mapping": "resolution",
+        "required": true,
+        "mapping_type": "string",
+        "accepted_values": ["720p"]
+      },
+      {
+        "key": "aspect_ratio",
+        "type": "string",
+        "notes": "",
+        "default": "auto",
+        "mapping": "aspect_ratio",
+        "required": true,
+        "mapping_type": "string",
+        "accepted_values": ["16:9", "9:16", "auto"]
+      },
+      {
+        "default_values": {
+          "delete_video": true
+        }
+      }
+    ],
+    "parent_type": "image-to-video"
+  },
+  {
+    "fps": 24,
+    "link": "https://fal.ai/models/fal-ai/kling-video/v2.6/pro/text-to-video",
+    "tier": "Elite",
+    "type": "text-to-video",
+    "price": {
+      "unit": "per_second",
+      "price_per_unit": 0.07,
+      "multiplier_field_key": "enable_audio",
+      "multiplier_value": 2
+    },
+    "endpoint": "fal-ai/kling-video/v2.6/pro/text-to-video",
+    "provider": "Kling",
+    "is_active": true,
+    "parameters": [
+      {
+        "key": "prompt",
+        "type": "string",
+        "notes": "",
+        "default": "",
+        "mapping": "prompt",
+        "required": true,
+        "mapping_type": "string"
+      },
+      {
+        "key": "duration",
+        "type": "integer",
+        "notes": "Add s at the end of the duration",
+        "default": 5,
+        "mapping": "duration",
+        "required": true,
+        "mapping_type": "integer",
+        "accepted_values": {
+          "steps": 5,
+          "max_duration": 10,
+          "min_duration": 5
+        }
+      },
+      {
+        "key": "resolution",
+        "type": "string",
+        "notes": "do not include the resolution in the payload",
+        "default": "1080p",
+        "mapping": "resolution",
+        "required": true,
+        "mapping_type": "string",
+        "accepted_values": ["1080p"]
+      },
+      {
+        "key": "aspect_ratio",
+        "type": "string",
+        "notes": "do not include the aspect ratio in the payload",
+        "default": "16:9",
+        "mapping": "aspect_ratio",
+        "required": true,
+        "mapping_type": "string",
+        "accepted_values": ["1:1", "16:9", "9:16"]
+      },
+      {
+        "key": "negative_prompt",
+        "type": "string",
+        "notes": "This is the negative prompt for the video",
+        "default": "",
+        "mapping": "negative_prompt",
+        "required": true,
+        "mapping_type": "string"
+      },
+      {
+        "key": "enable_audio",
+        "type": "boolean",
+        "notes": "",
+        "default": false,
+        "mapping": "generate_audio",
+        "required": true,
+        "mapping_type": "boolean"
+      }
+    ],
+    "parent_type": "text-to-video"
+  },
+  {
+    "fps": 24,
+    "link": "https://fal.ai/models/fal-ai/minimax/hailuo-2.3/standard/image-to-video",
+    "tier": "Plus",
+    "type": "image-to-video",
+    "price": {
+      "tier": {
+        "6": 0.28,
+        "10": 0.56
+      },
+      "unit": "per_request",
+      "tier_field_key": "duration"
+    },
+    "endpoint": "fal-ai/minimax/hailuo-2.3/standard/image-to-video",
+    "provider": "Hailuo",
+    "is_active": true,
+    "parameters": [
+      {
+        "key": "prompt",
+        "type": "string",
+        "notes": "",
+        "default": "",
+        "mapping": "prompt",
+        "required": true,
+        "mapping_type": "string"
+      },
+      {
+        "key": "image_url",
+        "type": "string",
+        "notes": "",
+        "default": "",
+        "mapping": "image_url",
+        "required": true,
+        "mapping_type": "string"
+      },
+      {
+        "key": "duration",
+        "type": "integer",
+        "notes": "Value type is string",
+        "default": 6,
+        "mapping": "duration",
+        "required": true,
+        "mapping_type": "string",
+        "accepted_values": {
+          "steps": 4,
+          "max_duration": 10,
+          "min_duration": 6
+        }
+      },
+      {
+        "key": "resolution",
+        "type": "string",
+        "notes": "",
+        "default": "768p",
+        "mapping": "resolution",
+        "required": true,
+        "mapping_type": "string",
+        "accepted_values": ["768p"]
+      },
+      {
+        "key": "aspect_ratio",
+        "type": "string",
+        "notes": "",
+        "default": "16:9",
+        "mapping": "aspect_ratio",
+        "required": true,
+        "mapping_type": "string",
+        "accepted_values": ["16:9"]
+      },
+      {
+        "key": "enhance_prompt",
+        "type": "boolean",
+        "notes": "",
+        "default": false,
+        "mapping": "prompt_optimizer",
+        "required": false,
+        "mapping_type": "boolean"
+      }
+    ],
+    "parent_type": "image-to-video"
+  },
+  {
+    "fps": 24,
+    "link": "https://fal.ai/models/fal-ai/ltx-2/retake-video",
+    "tier": "Plus",
+    "type": "retake",
+    "price": {
+      "unit": "per_second",
+      "price_per_unit": 0.1
+    },
+    "endpoint": "fal-ai/ltx-2/retake-video",
+    "provider": "Ltx 2",
+    "is_active": true,
+    "parameters": [
+      {
+        "key": "duration",
+        "type": "integer",
+        "notes": "Add s at the end of the duration",
+        "default": 2,
+        "mapping": "duration",
+        "required": true,
+        "mapping_type": "integer",
+        "accepted_values": {
+          "steps": 1,
+          "max_duration": 20,
+          "min_duration": 2
+        }
+      },
+      {
+        "key": "retake_mode",
+        "type": "string",
+        "notes": "",
+        "default": "replace_audio",
+        "mapping": "retake_mode",
+        "required": true,
+        "mapping_type": "string",
+        "accepted_values": ["replace_audio", "replace_video", "replace_audio_and_video"]
+      },
+      {
+        "key": "aspect_ratio",
+        "type": "string",
+        "notes": "",
+        "default": "16:9",
+        "mapping": "aspect_ratio",
+        "required": true,
+        "mapping_type": "string",
+        "accepted_values": ["16:9"]
+      },
+      {
+        "key": "video_url",
+        "type": "string",
+        "notes": "",
+        "default": "",
+        "mapping": "video_url",
+        "required": true,
+        "mapping_type": "string"
+      }
+    ],
+    "parent_type": "retake"
+  },
+  {
+    "fps": null,
+    "link": "https://fal.ai/models/fal-ai/minimax/speech-2.6-turbo",
+    "tier": "Pro",
+    "type": "text-to-speech",
+    "price": {
+      "unit": "per_char",
+      "price_per_unit": 0.06,
+      "billing_unit_size": 1000
+    },
+    "endpoint": "fal-ai/minimax/speech-2.6-turbo",
+    "provider": "Minimax",
+    "is_active": true,
+    "parameters": [
+      {
+        "key": "text",
+        "type": "string",
+        "notes": "",
+        "default": "",
+        "mapping": "text",
+        "required": true,
+        "mapping_type": "string"
+      },
+      {
+        "key": "voice",
+        "type": "string",
+        "notes": "",
+        "default": "Lovely_Girl",
+        "mapping": "voice_id",
+        "required": true,
+        "mapping_type": "string",
+        "accepted_values": [
+          "Lovely_Girl",
+          "Decent_Boy",
+          "Imposing_Manner",
+          "Elegant_Man",
+          "Abbess",
+          "Sweet_Girl_2",
+          "Exuberant_Girl",
+          "Wise_Woman",
+          "Friendly_Person",
+          "Inspirational_girl",
+          "Deep_Voice_Man",
+          "Calm_Woman",
+          "Casual_Guy",
+          "Lively_Girl",
+          "Patient_Man",
+          "Young_Knight",
+          "Determined_Man"
+        ]
+      },
+      {
+        "key": "speech_speed",
+        "type": "float",
+        "notes": "",
+        "default": 1.0,
+        "mapping": "speed",
+        "required": false,
+        "mapping_type": "float",
+        "accepted_values": {
+          "steps": 0.1,
+          "max_speed": 2,
+          "min_speed": 0.5
+        }
+      },
+      {
+        "key": "voice_emotion",
+        "type": "string",
+        "notes": "",
+        "default": "neutral",
+        "mapping": "emotion",
+        "required": false,
+        "mapping_type": "string",
+        "accepted_values": ["happy", "sad", "angry", "fearful", "disgusted", "surprised", "neutral"]
+      }
+    ],
+    "parent_type": "text-to-speech"
+  },
+  {
+    "fps": 25,
+    "link": "https://fal.ai/models/fal-ai/ltx-2/image-to-video",
+    "tier": "Plus",
+    "type": "image-to-video",
+    "price": {
+      "tier": {
+        "1080p": 0.06,
+        "1440p": 0.12,
+        "2160p": 0.24
+      },
+      "unit": "per_second",
+      "tier_field_key": "resolution"
+    },
+    "endpoint": "fal-ai/ltx-2/image-to-video",
+    "provider": "Ltx 2",
+    "is_active": true,
+    "parameters": [
+      {
+        "key": "prompt",
+        "type": "string",
+        "notes": "",
+        "default": "",
+        "mapping": "prompt",
+        "required": true,
+        "mapping_type": "string"
+      },
+      {
+        "key": "image_url",
+        "type": "string",
+        "notes": "",
+        "default": "",
+        "mapping": "image_url",
+        "required": true,
+        "mapping_type": "string"
+      },
+      {
+        "key": "fps",
+        "type": "integer",
+        "notes": "",
+        "default": 25,
+        "mapping": "fps",
+        "required": true,
+        "mapping_type": "integer",
+        "accepted_values": [25, 50]
+      },
+      {
+        "key": "duration",
+        "type": "integer",
+        "notes": "Add s at the end of the duration",
+        "default": 6,
+        "mapping": "duration",
+        "required": true,
+        "mapping_type": "integer",
+        "accepted_values": {
+          "steps": 2,
+          "max_duration": 10,
+          "min_duration": 6
+        }
+      },
+      {
+        "key": "resolution",
+        "type": "string",
+        "notes": "",
+        "default": "1080p",
+        "mapping": "resolution",
+        "required": true,
+        "mapping_type": "string",
+        "accepted_values": ["1080p", "1440p", "2160p"]
+      },
+      {
+        "key": "aspect_ratio",
+        "type": "string",
+        "notes": "",
+        "default": "16:9",
+        "mapping": "aspect_ratio",
+        "required": true,
+        "mapping_type": "string",
+        "accepted_values": ["16:9"]
+      },
+      {
+        "key": "enable_audio",
+        "type": "boolean",
+        "notes": "",
+        "default": false,
+        "mapping": "generate_audio",
+        "required": true,
+        "mapping_type": "boolean"
+      }
+    ],
+    "parent_type": "image-to-video"
+  },
+  {
+    "fps": 30,
+    "link": "https://fal.ai/models/fal-ai/longcat-video/image-to-video/720p",
+    "tier": "Standard",
+    "type": "image-to-video",
+    "price": {
+      "unit": "per_second",
+      "price_per_unit": 0.04
+    },
+    "endpoint": "fal-ai/longcat-video/image-to-video/720p",
+    "provider": "Long Cat",
+    "is_active": true,
+    "parameters": [
+      {
+        "key": "prompt",
+        "type": "string",
+        "notes": "",
+        "default": "",
+        "mapping": "prompt",
+        "required": true,
+        "mapping_type": "string"
+      },
+      {
+        "key": "duration",
+        "type": "integer",
+        "notes": "Multiply second by 30 to get the number of frames",
+        "default": 4,
+        "mapping": "num_frames",
+        "required": true,
+        "mapping_type": "integer",
+        "accepted_values": {
+          "steps": 1,
+          "max_duration": 30,
+          "min_duration": 2
+        }
+      },
+      {
+        "key": "resolution",
+        "type": "string",
+        "notes": "",
+        "default": "720p",
+        "mapping": "resolution",
+        "required": true,
+        "mapping_type": "string",
+        "accepted_values": ["720p"]
+      },
+      {
+        "key": "aspect_ratio",
+        "type": "string",
+        "notes": "",
+        "default": "9:16",
+        "mapping": "aspect_ratio",
+        "required": true,
+        "mapping_type": "string",
+        "accepted_values": ["16:9", "9:16", "1:1"]
+      },
+      {
+        "key": "negative_prompt",
+        "type": "string",
+        "notes": "",
+        "default": "",
+        "mapping": "negative_prompt",
+        "required": false,
+        "mapping_type": "string"
+      },
+      {
+        "key": "image_url",
+        "type": "string",
+        "notes": "",
+        "default": "",
+        "mapping": "image_url",
+        "required": true,
+        "mapping_type": "string"
+      },
+      {
+        "key": "enhance_prompt",
+        "type": "boolean",
+        "notes": "",
+        "mapping": "enable_prompt_expansion",
+        "required": false,
+        "mapping_type": "boolean"
+      },
+      {
+        "default_values": {
+          "fps": 30,
+          "seed": 42,
+          "sync_mode": false,
+          "video_quality": "high",
+          "video_write_mode": "balanced",
+          "video_output_type": "X264 (.mp4)",
+          "num_inference_steps": 12,
+          "enable_safety_checker": true,
+          "num_refine_inference_steps": 12
+        }
+      }
+    ],
+    "parent_type": "image-to-video"
+  },
+  {
+    "fps": 24,
+    "link": "https://fal.ai/models/fal-ai/veo3.1/fast/first-last-frame-to-video",
+    "tier": "Pro",
+    "type": "first-last-frame-to-video",
+    "price": {
+      "unit": "per_second",
+      "price_per_unit": 0.1,
+      "multiplier_field_key": "enable_audio",
+      "multiplier_value": 1.5
+    },
+    "endpoint": "fal-ai/veo3.1/fast/first-last-frame-to-video",
+    "provider": "Veo3.1 Fast",
+    "is_active": true,
+    "parameters": [
+      {
+        "key": "prompt",
+        "type": "string",
+        "notes": "",
+        "default": "",
+        "mapping": "prompt",
+        "required": true,
+        "mapping_type": "string"
+      },
+      {
+        "key": "image_urls[0]",
+        "type": "string",
+        "notes": "",
+        "default": "",
+        "mapping": "image_urls[0]",
+        "required": true,
+        "mapping_type": "string"
+      },
+      {
+        "key": "image_urls[1]",
+        "type": "string",
+        "notes": "",
+        "default": "",
+        "mapping": "image_urls[1]",
+        "required": false,
+        "mapping_type": "string"
+      },
+      {
+        "key": "duration",
+        "type": "integer",
+        "notes": "Add s at the end of the duration",
+        "default": 8,
+        "mapping": "duration",
+        "required": true,
+        "mapping_type": "string",
+        "accepted_values": {
+          "steps": 0,
+          "max_duration": 8,
+          "min_duration": 8
+        }
+      },
+      {
+        "key": "resolution",
+        "type": "string",
+        "notes": "",
+        "default": "720p",
+        "mapping": "resolution",
+        "required": true,
+        "mapping_type": "string",
+        "accepted_values": ["720p", "1080p"]
+      },
+      {
+        "key": "aspect_ratio",
+        "type": "string",
+        "notes": "",
+        "default": "16:9",
+        "mapping": "aspect_ratio",
+        "required": true,
+        "mapping_type": "string",
+        "accepted_values": ["16:9"]
+      },
+      {
+        "key": "enable_audio",
+        "type": "boolean",
+        "notes": "",
+        "default": false,
+        "mapping": "generate_audio",
+        "required": true,
+        "mapping_type": "boolean"
+      },
+      {
+        "key": "negative_prompt",
+        "type": "string",
+        "notes": "This is the negative prompt for the video",
+        "default": "",
+        "mapping": "negative_prompt",
+        "required": true,
+        "mapping_type": "string"
+      },
+      {
+        "default_values": {
+          "auto_fix": true
+        }
+      }
+    ],
+    "parent_type": "image-to-video"
+  },
+  {
+    "fps": 24,
+    "link": "https://fal.ai/models/fal-ai/minimax/hailuo-2.3/pro/text-to-video",
+    "tier": "Pro",
+    "type": "text-to-video",
+    "price": {
+      "unit": "per_request",
+      "price_per_unit": 0.49
+    },
+    "endpoint": "fal-ai/minimax/hailuo-2.3/pro/text-to-video",
+    "provider": "Hailuo",
+    "is_active": true,
+    "parameters": [
+      {
+        "key": "prompt",
+        "type": "string",
+        "notes": "",
+        "default": "",
+        "mapping": "prompt",
+        "required": true,
+        "mapping_type": "string"
+      },
+      {
+        "key": "duration",
+        "type": "integer",
+        "notes": "Fixed at 6 seconds",
+        "default": 6,
+        "mapping": "duration",
+        "required": true,
+        "mapping_type": "string",
+        "accepted_values": {
+          "steps": 0,
+          "max_duration": 6,
+          "min_duration": 6
+        }
+      },
+      {
+        "key": "resolution",
+        "type": "string",
+        "notes": "",
+        "default": "1080p",
+        "mapping": "resolution",
+        "required": true,
+        "mapping_type": "string",
+        "accepted_values": ["1080p"]
+      },
+      {
+        "key": "aspect_ratio",
+        "type": "string",
+        "notes": "",
+        "default": "16:9",
+        "mapping": "aspect_ratio",
+        "required": true,
+        "mapping_type": "string",
+        "accepted_values": ["16:9"]
+      },
+      {
+        "key": "enhance_prompt",
+        "type": "boolean",
+        "notes": "",
+        "default": false,
+        "mapping": "prompt_optimizer",
+        "required": false,
+        "mapping_type": "boolean"
+      }
+    ],
+    "parent_type": "text-to-video"
+  },
+  {
+    "fps": null,
+    "link": "https://fal.ai/models/fal-ai/mmaudio-v2/text-to-audio",
+    "tier": "Basic",
+    "type": "text-to-audio",
+    "price": {
+      "unit": "per_second",
+      "price_per_unit": 0.001
+    },
+    "endpoint": "fal-ai/mmaudio-v2/text-to-audio",
+    "provider": "MM Audio 2",
+    "is_active": true,
+    "parameters": [
+      {
+        "key": "prompt",
+        "type": "string",
+        "notes": "",
+        "default": "",
+        "mapping": "prompt",
+        "required": true,
+        "mapping_type": "string"
+      },
+      {
+        "key": "duration",
+        "type": "integer",
+        "notes": "",
+        "default": 10,
+        "mapping": "duration",
+        "required": true,
+        "mapping_type": "integer",
+        "accepted_values": {
+          "steps": 1,
+          "max_duration": 30,
+          "min_duration": 1
+        }
+      }
+    ],
+    "parent_type": "text-to-audio"
+  },
+  {
+    "fps": 24,
+    "link": "https://fal.ai/models/fal-ai/veo3.1",
+    "tier": "Elite",
+    "type": "text-to-video",
+    "price": {
+      "unit": "per_second",
+      "price_per_unit": 0.2,
+      "multiplier_field_key": "enable_audio",
+      "multiplier_value": 2
+    },
+    "endpoint": "fal-ai/veo3.1",
+    "provider": "Veo3.1",
+    "is_active": true,
+    "parameters": [
+      {
+        "key": "prompt",
+        "type": "string",
+        "notes": "",
+        "default": "",
+        "mapping": "prompt",
+        "required": true,
+        "mapping_type": "string"
+      },
+      {
+        "key": "duration",
+        "type": "integer",
+        "notes": "Add s at the end of the duration",
+        "default": 4,
+        "mapping": "duration",
+        "required": true,
+        "mapping_type": "string",
+        "accepted_values": {
+          "steps": 2,
+          "max_duration": 8,
+          "min_duration": 4
+        }
+      },
+      {
+        "key": "resolution",
+        "type": "string",
+        "notes": "",
+        "default": "720p",
+        "mapping": "resolution",
+        "required": true,
+        "mapping_type": "string",
+        "accepted_values": ["720p", "1080p"]
+      },
+      {
+        "key": "negative_prompt",
+        "type": "string",
+        "notes": "",
+        "default": "",
+        "mapping": "negative_prompt",
+        "required": false,
+        "mapping_type": "string"
+      },
+      {
+        "key": "aspect_ratio",
+        "type": "string",
+        "notes": "",
+        "default": "16:9",
+        "mapping": "aspect_ratio",
+        "required": true,
+        "mapping_type": "string",
+        "accepted_values": ["16:9", "9:16"]
+      },
+      {
+        "key": "enable_audio",
+        "type": "boolean",
+        "notes": "",
+        "mapping": "generate_audio",
+        "required": true,
+        "mapping_type": "boolean"
+      },
+      {
+        "default_values": {
+          "auto_fix": true
+        }
+      }
+    ],
+    "parent_type": "text-to-video"
+  },
+  {
+    "fps": null,
+    "link": "https://fal.ai/models/fal-ai/nano-banana-pro",
+    "tier": "Elite",
+    "type": "text-to-image",
+    "price": {
+      "tier": {
+        "1K": 0.17,
+        "2K": 0.17,
+        "4K": 0.34
+      },
+      "unit": "per_request",
+      "tier_field_key": "resolution"
+    },
+    "endpoint": "fal-ai/nano-banana-pro",
+    "provider": "Nano Banana Pro",
+    "is_active": true,
+    "parameters": [
+      {
+        "key": "prompt",
+        "type": "string",
+        "notes": "",
+        "default": "",
+        "mapping": "prompt",
+        "required": true,
+        "mapping_type": "string"
+      },
+      {
+        "key": "resolution",
+        "type": "string",
+        "notes": "",
+        "default": "2K",
+        "mapping": "resolution",
+        "required": false,
+        "mapping_type": "string",
+        "accepted_values": ["1K", "2K", "4K"]
+      },
+      {
+        "key": "aspect_ratio",
+        "type": "string",
+        "notes": "",
+        "default": "16:9",
+        "mapping": "aspect_ratio",
+        "required": false,
+        "mapping_type": "string",
+        "accepted_values": ["21:9", "16:9", "3:2", "4:3", "5:4", "1:1", "4:5", "3:4", "2:3", "9:16"]
+      }
+    ],
+    "parent_type": "text-to-image"
+  },
+  {
+    "fps": 24,
+    "link": "https://fal.ai/models/fal-ai/minimax/hailuo-2.3-fast/standard/image-to-video",
+    "tier": "Standard",
+    "type": "image-to-video",
+    "price": {
+      "tier": {
+        "6": 0.19,
+        "10": 0.32
+      },
+      "unit": "per_request",
+      "tier_field_key": "duration"
+    },
+    "endpoint": "fal-ai/minimax/hailuo-2.3-fast/standard/image-to-video",
+    "provider": "Hailuo Fast",
+    "is_active": true,
+    "parameters": [
+      {
+        "key": "prompt",
+        "type": "string",
+        "notes": "",
+        "default": "",
+        "mapping": "prompt",
+        "required": true,
+        "mapping_type": "string"
+      },
+      {
+        "key": "image_url",
+        "type": "string",
+        "notes": "",
+        "default": "",
+        "mapping": "image_url",
+        "required": true,
+        "mapping_type": "string"
+      },
+      {
+        "key": "duration",
+        "type": "integer",
+        "notes": "Value type is string",
+        "default": 6,
+        "mapping": "duration",
+        "required": true,
+        "mapping_type": "string",
+        "accepted_values": {
+          "steps": 4,
+          "max_duration": 10,
+          "min_duration": 6
+        }
+      },
+      {
+        "key": "resolution",
+        "type": "string",
+        "notes": "",
+        "default": "768p",
+        "mapping": "resolution",
+        "required": true,
+        "mapping_type": "string",
+        "accepted_values": ["768p"]
+      },
+      {
+        "key": "aspect_ratio",
+        "type": "string",
+        "notes": "",
+        "default": "16:9",
+        "mapping": "aspect_ratio",
+        "required": true,
+        "mapping_type": "string",
+        "accepted_values": ["16:9"]
+      },
+      {
+        "key": "enhance_prompt",
+        "type": "boolean",
+        "notes": "",
+        "default": false,
+        "mapping": "prompt_optimizer",
+        "required": false,
+        "mapping_type": "boolean"
+      }
+    ],
+    "parent_type": "image-to-video"
+  },
+  {
+    "fps": null,
+    "link": "https://fal.ai/models/sonauto/v2/text-to-music",
+    "tier": "Pro",
+    "type": "text-to-music",
+    "price": {
+      "unit": "per_request",
+      "price_per_unit": 0.075
+    },
+    "endpoint": "sonauto/v2/text-to-music",
+    "provider": "Sonauto",
+    "is_active": true,
+    "parameters": [
+      {
+        "key": "prompt",
+        "type": "string",
+        "notes": "",
+        "default": "",
+        "mapping": "prompt",
+        "required": true,
+        "mapping_type": "string"
+      }
+    ],
+    "parent_type": "text-to-music"
+  },
+  {
+    "fps": 24,
+    "link": "https://fal.ai/models/fal-ai/minimax/hailuo-2.3/pro/image-to-video",
+    "tier": "Pro",
+    "type": "image-to-video",
+    "price": {
+      "unit": "per_request",
+      "price_per_unit": 0.49
+    },
+    "endpoint": "fal-ai/minimax/hailuo-2.3/pro/image-to-video",
+    "provider": "Hailuo",
+    "is_active": true,
+    "parameters": [
+      {
+        "key": "prompt",
+        "type": "string",
+        "notes": "",
+        "default": "",
+        "mapping": "prompt",
+        "required": true,
+        "mapping_type": "string"
+      },
+      {
+        "key": "image_url",
+        "type": "string",
+        "notes": "",
+        "default": "",
+        "mapping": "image_url",
+        "required": true,
+        "mapping_type": "string"
+      },
+      {
+        "key": "duration",
+        "type": "integer",
+        "notes": "Fixed at 6 seconds",
+        "default": 6,
+        "mapping": "duration",
+        "required": true,
+        "mapping_type": "string",
+        "accepted_values": {
+          "steps": 0,
+          "max_duration": 6,
+          "min_duration": 6
+        }
+      },
+      {
+        "key": "resolution",
+        "type": "string",
+        "notes": "",
+        "default": "1080p",
+        "mapping": "resolution",
+        "required": true,
+        "mapping_type": "string",
+        "accepted_values": ["1080p"]
+      },
+      {
+        "key": "aspect_ratio",
+        "type": "string",
+        "notes": "",
+        "default": "16:9",
+        "mapping": "aspect_ratio",
+        "required": true,
+        "mapping_type": "string",
+        "accepted_values": ["16:9"]
+      },
+      {
+        "key": "enhance_prompt",
+        "type": "boolean",
+        "notes": "",
+        "default": false,
+        "mapping": "prompt_optimizer",
+        "required": false,
+        "mapping_type": "boolean"
+      }
+    ],
+    "parent_type": "image-to-video"
+  },
+  {
+    "fps": 24,
+    "link": "https://fal.ai/models/fal-ai/veo3.1/image-to-video",
+    "tier": "Elite",
+    "type": "image-to-video",
+    "price": {
+      "unit": "per_second",
+      "price_per_unit": 0.2,
+      "multiplier_field_key": "enable_audio",
+      "multiplier_value": 2
+    },
+    "endpoint": "fal-ai/veo3.1/image-to-video",
+    "provider": "Veo3.1",
+    "is_active": true,
+    "parameters": [
+      {
+        "key": "prompt",
+        "type": "string",
+        "notes": "",
+        "default": "",
+        "mapping": "prompt",
+        "required": true,
+        "mapping_type": "string"
+      },
+      {
+        "key": "image_url",
+        "type": "string",
+        "notes": "",
+        "default": "",
+        "mapping": "image_url",
+        "required": true,
+        "mapping_type": "string"
+      },
+      {
+        "key": "duration",
+        "type": "integer",
+        "notes": "Add s at the end of the duration",
+        "default": 4,
+        "mapping": "duration",
+        "required": true,
+        "mapping_type": "string",
+        "accepted_values": {
+          "steps": 2,
+          "max_duration": 8,
+          "min_duration": 4
+        }
+      },
+      {
+        "key": "resolution",
+        "type": "string",
+        "notes": "",
+        "default": "1080p",
+        "mapping": "resolution",
+        "required": true,
+        "mapping_type": "string",
+        "accepted_values": ["720p", "1080p"]
+      },
+      {
+        "key": "aspect_ratio",
+        "type": "string",
+        "notes": "",
+        "default": "auto",
+        "mapping": "aspect_ratio",
+        "required": true,
+        "mapping_type": "string",
+        "accepted_values": ["auto", "16:9", "9:16"]
+      },
+      {
+        "key": "enable_audio",
+        "type": "boolean",
+        "notes": "",
+        "mapping": "generate_audio",
+        "required": true,
+        "mapping_type": "boolean"
+      },
+      {
+        "default_values": {
+          "auto_fix": true
+        }
+      }
+    ],
+    "parent_type": "image-to-video"
+  },
+  {
+    "fps": 48,
+    "link": "https://fal.ai/models/fal-ai/kling-video/ai-avatar/v2/standard",
+    "tier": "Pro",
+    "type": "avatar",
+    "price": {
+      "unit": "per_second",
+      "price_per_unit": 0.0562,
+      "billing_unit_size": 1
+    },
+    "endpoint": "fal-ai/kling-video/ai-avatar/v2/standard",
+    "provider": "Kling",
+    "is_active": true,
+    "parameters": [
+      {
+        "key": "prompt",
+        "type": "string",
+        "notes": "",
+        "default": "",
+        "mapping": "prompt",
+        "required": false,
+        "mapping_type": "string"
+      },
+      {
+        "key": "image_url",
+        "type": "string",
+        "notes": "Avatar image",
+        "default": "",
+        "mapping": "image_url",
+        "required": true,
+        "mapping_type": "string"
+      },
+      {
+        "key": "audio_url",
+        "type": "string",
+        "notes": "Audio file for lip sync",
+        "default": "",
+        "mapping": "audio_url",
+        "required": true,
+        "mapping_type": "string"
+      }
+    ],
+    "parent_type": "avatar"
+  },
+  {
+    "fps": 30,
+    "link": "https://fal.ai/models/fal-ai/sora-2/text-to-video",
+    "tier": "Pro",
+    "type": "text-to-video",
+    "price": {
+      "unit": "per_second",
+      "price_per_unit": 0.1
+    },
+    "endpoint": "fal-ai/sora-2/text-to-video",
+    "provider": "Sora 2",
+    "is_active": true,
+    "parameters": [
+      {
+        "key": "prompt",
+        "type": "string",
+        "notes": "",
+        "default": "",
+        "mapping": "prompt",
+        "required": true,
+        "mapping_type": "string"
+      },
+      {
+        "key": "duration",
+        "type": "integer",
+        "notes": "Add s at the end of the duration",
+        "default": 4,
+        "mapping": "duration",
+        "required": true,
+        "mapping_type": "integer",
+        "accepted_values": {
+          "steps": 4,
+          "max_duration": 12,
+          "min_duration": 4
+        }
+      },
+      {
+        "key": "resolution",
+        "type": "string",
+        "notes": "",
+        "default": "720p",
+        "mapping": "resolution",
+        "required": true,
+        "mapping_type": "string",
+        "accepted_values": ["720p"]
+      },
+      {
+        "key": "aspect_ratio",
+        "type": "string",
+        "notes": "",
+        "default": "16:9",
+        "mapping": "aspect_ratio",
+        "required": true,
+        "mapping_type": "string",
+        "accepted_values": ["16:9", "9:16"]
+      },
+      {
+        "default_values": {
+          "delete_video": true
+        }
+      }
+    ],
+    "parent_type": "text-to-video"
+  },
+  {
+    "fps": 24,
+    "link": "https://fal.ai/models/fal-ai/veo3.1/first-last-frame-to-video",
+    "tier": "Elite",
+    "type": "first-last-frame-to-video",
+    "price": {
+      "unit": "per_second",
+      "price_per_unit": 0.2,
+      "multiplier_field_key": "enable_audio",
+      "multiplier_value": 2
+    },
+    "endpoint": "fal-ai/veo3.1/first-last-frame-to-video",
+    "provider": "Veo3.1",
+    "is_active": true,
+    "parameters": [
+      {
+        "key": "prompt",
+        "type": "string",
+        "notes": "",
+        "default": "",
+        "mapping": "prompt",
+        "required": true,
+        "mapping_type": "string"
+      },
+      {
+        "key": "image_urls[0]",
+        "type": "string",
+        "notes": "",
+        "default": "",
+        "mapping": "image_urls[0]",
+        "required": true,
+        "mapping_type": "string"
+      },
+      {
+        "key": "image_urls[1]",
+        "type": "string",
+        "notes": "",
+        "default": "",
+        "mapping": "image_urls[1]",
+        "required": false,
+        "mapping_type": "string"
+      },
+      {
+        "key": "duration",
+        "type": "integer",
+        "notes": "Add s at the end of the duration",
+        "default": 8,
+        "mapping": "duration",
+        "required": true,
+        "mapping_type": "string",
+        "accepted_values": {
+          "steps": 0,
+          "max_duration": 8,
+          "min_duration": 8
+        }
+      },
+      {
+        "key": "resolution",
+        "type": "string",
+        "notes": "",
+        "default": "720p",
+        "mapping": "resolution",
+        "required": true,
+        "mapping_type": "string",
+        "accepted_values": ["720p", "1080p"]
+      },
+      {
+        "key": "aspect_ratio",
+        "type": "string",
+        "notes": "",
+        "default": "16:9",
+        "mapping": "aspect_ratio",
+        "required": true,
+        "mapping_type": "string",
+        "accepted_values": ["16:9"]
+      },
+      {
+        "key": "enable_audio",
+        "type": "boolean",
+        "notes": "",
+        "default": false,
+        "mapping": "generate_audio",
+        "required": true,
+        "mapping_type": "boolean"
+      },
+      {
+        "key": "negative_prompt",
+        "type": "string",
+        "notes": "This is the negative prompt for the video",
+        "default": "",
+        "mapping": "negative_prompt",
+        "required": true,
+        "mapping_type": "string"
+      },
+      {
+        "default_values": {
+          "auto_fix": true
+        }
+      }
+    ],
+    "parent_type": "image-to-video"
+  },
+  {
+    "fps": 24,
+    "link": "https://fal.ai/models/fal-ai/minimax/hailuo-2.3-fast/pro/image-to-video",
+    "tier": "Plus",
+    "type": "image-to-video",
+    "price": {
+      "unit": "per_request",
+      "price_per_unit": 0.33
+    },
+    "endpoint": "fal-ai/minimax/hailuo-2.3-fast/pro/image-to-video",
+    "provider": "Hailuo Fast",
+    "is_active": true,
+    "parameters": [
+      {
+        "key": "prompt",
+        "type": "string",
+        "notes": "",
+        "default": "",
+        "mapping": "prompt",
+        "required": true,
+        "mapping_type": "string"
+      },
+      {
+        "key": "image_url",
+        "type": "string",
+        "notes": "",
+        "default": "",
+        "mapping": "image_url",
+        "required": true,
+        "mapping_type": "string"
+      },
+      {
+        "key": "duration",
+        "type": "integer",
+        "notes": "Fixed at 6 seconds",
+        "default": 6,
+        "mapping": "duration",
+        "required": true,
+        "mapping_type": "string",
+        "accepted_values": {
+          "steps": 0,
+          "max_duration": 6,
+          "min_duration": 6
+        }
+      },
+      {
+        "key": "resolution",
+        "type": "string",
+        "notes": "",
+        "default": "1080p",
+        "mapping": "resolution",
+        "required": true,
+        "mapping_type": "string",
+        "accepted_values": ["1080p"]
+      },
+      {
+        "key": "aspect_ratio",
+        "type": "string",
+        "notes": "",
+        "default": "16:9",
+        "mapping": "aspect_ratio",
+        "required": true,
+        "mapping_type": "string",
+        "accepted_values": ["16:9"]
+      },
+      {
+        "key": "enhance_prompt",
+        "type": "boolean",
+        "notes": "",
+        "default": false,
+        "mapping": "prompt_optimizer",
+        "required": false,
+        "mapping_type": "boolean"
+      }
+    ],
+    "parent_type": "image-to-video"
+  }
+]

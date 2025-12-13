@@ -1,0 +1,9 @@
+{
+  "name": "@octupost/api",
+  "private": true,
+  "scripts": {
+    "dev": "source venv/bin/activate && python -m uvicorn app.main:app --reload --host 0.0.0.0 --port 8000",
+    "playground": "source venv/bin/activate && streamlit run playground.py --server.port 8501 --server.headless true"
+  }
+}
+

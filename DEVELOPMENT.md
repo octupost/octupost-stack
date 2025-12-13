@@ -1,266 +1,122 @@
-# Octupost Stack - Development Guide
+# Development Setup
 
-This monorepo contains the complete Octupost application stack, managed using **Turborepo** for centralized orchestration.
+Quick guide to run all services locally for development.
 
-## 🏗️ Architecture Overview
+## One-Time Setup
 
-| App | Technology | Port | Description |
-|-----|-----------|------|-------------|
-| `octupost` | Next.js 16 | 3000 | Main web application |
-| `octupost-studio` | Next.js 14 | 3001 | Video studio editor |
-| `octupost-api` | Python/FastAPI | 8000 | Backend API server |
-| `octupost-mixpost` | Laravel/PHP | 8001 | Social media management (separate) |
+### Fix npm Cache Permissions (if needed)
 
-## 🚀 Quick Start
-
-### Run All Apps (Centralized)
-
-From the root directory, run:
+If you encounter npm permission errors, run:
 
 ```bash
+sudo chown -R $(whoami) ~/.npm
+```
+
+## Port Reference
+
+| Service  | URL                    | Port |
+|----------|------------------------|------|
+| Frontend | http://localhost:3000  | 3000 |
+| API      | http://localhost:8000  | 8000 |
+| Mixpost  | http://localhost:8080  | 8080 |
+
+---
+
+## 1. Mixpost (Laravel)
+
+```bash
+cd mixpost
+php artisan serve --port=8080
+```
+
+Runs at: http://localhost:8080
+
+---
+
+## 2. Frontend (Next.js)
+
+```bash
+cd frontend
+npm install
 npm run dev
 ```
 
-This single command starts all 3 Turborepo-managed apps in parallel:
-- **@octupost/app** → http://localhost:3000
-- **@octupost/studio** → http://localhost:3001
-- **@octupost/api** → http://localhost:8000
-
-### Run Laravel App (Separately)
-
-The Laravel app is not part of Turborepo workspaces and must be run separately:
-
-```bash
-cd octupost-mixpost
-php artisan serve --port=8001
-```
+Runs at: http://localhost:3000
 
 ---
 
-## 📦 Initial Setup (First Time Only)
-
-### 1. Install Node.js Dependencies
+## 3. API (FastAPI)
 
 ```bash
-# From root directory
-npm install
-```
-
-This installs dependencies for all workspace packages.
-
-### 2. Set Up Python Virtual Environment (API)
-
-```bash
-cd octupost-api
+cd api
 python -m venv venv
-source venv/bin/activate  # On macOS/Linux
-# or: venv\Scripts\activate  # On Windows
-pip install -r requirements.txt
-```
-
-### 3. Set Up Laravel (Mixpost)
-
-```bash
-cd octupost-mixpost
-composer install
-php artisan migrate
-```
-
-### 4. Environment Variables
-
-Create the following files in the **root directory**:
-
-- `.env.local` - Local secrets (Supabase keys, API keys, etc.)
-- `.env.development` - Development-specific variables
-- `.env.production` - Production variables (for builds)
-
-Example `.env.local`:
-```env
-# Supabase
-NEXT_PUBLIC_SUPABASE_URL=your_supabase_url
-NEXT_PUBLIC_SUPABASE_ANON_KEY=your_anon_key
-SUPABASE_SERVICE_ROLE_KEY=your_service_role_key
-
-# API
-NEXT_PUBLIC_API_URL=http://localhost:8000
-
-# Other services
-SENTRY_DSN=your_sentry_dsn
-```
-
-The frontend expects `NEXT_PUBLIC_API_URL`. If you already have `OCTUPOST_API_URL` set, it will be reused automatically at build time to avoid localhost fallbacks.
-
----
-
-## 🛠️ Available Commands
-
-### Root Level (Turborepo)
-
-| Command | Description |
-|---------|-------------|
-| `npm run dev` | Start all apps in development mode |
-| `npm run build` | Build all apps for production |
-| `npm run lint` | Run linting on all apps |
-
-### Individual Apps
-
-You can also run commands for specific apps:
-
-```bash
-# Run only the main app
-cd octupost && npm run dev
-
-# Run only the studio
-cd octupost-studio && npm run dev
-
-# Run only the API
-cd octupost-api && source venv/bin/activate && python -m uvicorn app.main:app --reload --port 8000
-```
-
----
-
-## 📁 Project Structure
-
-```
-octupost-stack/
-├── package.json          # Root workspace config
-├── turbo.json            # Turborepo configuration
-├── .env.local            # Local environment variables
-├── .env.development      # Development environment
-│
-├── packages/
-│   └── shared/           # Shared utilities (@octupost/shared)
-│       └── src/
-│           ├── config/   # Centralized URLs, ports, domains
-│           └── supabase/ # Shared Supabase client utilities
-│
-├── octupost/             # Main Next.js app (port 3000)
-│   ├── app/              # App router pages
-│   ├── components/       # React components
-│   └── lib/              # Utilities & helpers
-│
-├── octupost-studio/      # Studio Next.js app (port 3001)
-│   ├── app/              # App router pages
-│   └── components/       # Studio components
-│
-├── octupost-api/         # Python FastAPI (port 8000)
-│   ├── app/              # FastAPI application
-│   │   ├── api/          # API routes
-│   │   ├── inngest/      # Background job functions
-│   │   ├── models/       # Data models
-│   │   └── services/     # Business logic
-│   └── venv/             # Python virtual environment
-│
-└── octupost-mixpost/     # Laravel app (port 8001)
-    ├── app/              # Laravel application
-    ├── routes/           # API & web routes
-    └── database/         # Migrations & seeders
-```
-
----
-
-## 🔧 Troubleshooting
-
-### Issue: "Missing packageManager field"
-Add this to root `package.json`:
-```json
-"packageManager": "npm@10.9.4"
-```
-
-### Issue: "Module not found: @supabase/ssr"
-Install the missing dependency:
-```bash
-cd octupost && npm install @supabase/ssr @supabase/supabase-js
-```
-
-### Issue: Port conflicts
-If ports are already in use:
-```bash
-# Find and kill process on port
-lsof -i :3000 | grep LISTEN
-kill -9 <PID>
-```
-
-### Issue: Python venv not activating
-Ensure you're using the correct shell command:
-```bash
-# bash/zsh
 source venv/bin/activate
-
-# fish
-source venv/bin/activate.fish
+pip install -r requirements.txt
+uvicorn app.main:app --reload --port 8000
 ```
+
+Runs at: http://localhost:8000
 
 ---
 
-## 🚢 Production Build
+## Running All Services
 
+Open 3 terminal tabs and run each service in its own tab:
+
+**Tab 1 - Mixpost:**
 ```bash
-# Build all apps
-npm run build
+cd mixpost && php artisan serve --port=8080
+```
 
-# Build outputs:
-# - octupost/.next/
-# - octupost-studio/.next/
+**Tab 2 - Frontend:**
+```bash
+cd frontend && npm run dev
+```
+
+**Tab 3 - API:**
+```bash
+cd api && source venv/bin/activate && uvicorn app.main:app --reload --port 8000
+cd api && source venv/bin/activate && python agent_os.py
 ```
 
 ---
 
-## 📦 Shared Package (@octupost/shared)
+## Cursor MCP Servers
 
-The `packages/shared` package contains centralized configuration and utilities used across all apps.
+MCP (Model Context Protocol) servers provide AI capabilities in Cursor. Configuration is stored in `~/.cursor/mcp.json`.
 
-### Configuration Constants
+### Configured MCP Servers
 
-```typescript
-import { URLS, PORTS, DOMAIN, getAppUrl, getCookieDomain } from "@octupost/shared/config"
+| Server | Package | Purpose |
+|--------|---------|---------|
+| Supabase | URL-based | Database operations |
+| fal | URL-based | AI image/video generation |
+| TwelveLabs | `@jine9323/twelvelabs` | Video understanding & search |
+| ElevenLabs | `elevenlabs-mcp` | Text-to-speech |
+| HeyGen | `heygen-mcp` | AI avatar videos |
+| RunwayML | `runway-mcp-server` | Video generation |
+| MiniMax | `minimax-mcp` | AI generation |
+| Replicate | `replicate-mcp` | ML model inference |
+| PostHog | URL-based | Analytics |
+| Sentry | URL-based | Error tracking |
 
-// Get URL for any app
-const studioUrl = getAppUrl("studio") // Returns prod or dev URL based on NODE_ENV
+### Adding a New MCP Server
 
-// Get cookie domain
-const cookieDomain = getCookieDomain() // ".octupost.com" in prod, undefined in dev
+Edit `~/.cursor/mcp.json` and add your server configuration:
+
+```json
+{
+  "mcpServers": {
+    "your-server": {
+      "command": "npx",
+      "args": ["-y", "package-name"],
+      "env": {
+        "API_KEY": "your-api-key"
+      }
+    }
+  }
+}
 ```
 
-### Supabase Clients
-
-```typescript
-// Browser client
-import { createClient } from "@octupost/shared/supabase/client"
-
-// Server client (async)
-import { createClient } from "@octupost/shared/supabase/server"
-
-// Middleware utilities
-import { updateSession, getSignInUrl } from "@octupost/shared/supabase/middleware"
-```
-
-### Centralized Values
-
-| Constant | Value |
-|----------|-------|
-| `DOMAIN` | `octupost.com` |
-| `COOKIE_DOMAIN` | `.octupost.com` |
-| `PORTS.app` | `3000` |
-| `PORTS.studio` | `3001` |
-| `PORTS.social` | `3002` |
-| `PORTS.api` | `8000` |
-| `PORTS.mixpost` | `8001` |
-
----
-
-## 📝 Additional Notes
-
-- **Inngest Dev Server**: If you're using Inngest for background jobs, run it separately:
-  ```bash
-  npx inngest-cli@latest dev
-  ```
-
-- **Database**: The API uses Supabase. Make sure your environment variables are configured.
-
-- **Hot Reload**: All apps support hot reload in development mode.
-
----
-
-*Last updated: December 6, 2025*
+After editing, restart Cursor for changes to take effect.
 

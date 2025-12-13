@@ -1,288 +1,209 @@
 /**
- * Type definitions for the AI Model Registry
- * 
- * This module defines all TypeScript interfaces for the centralized
- * model registry that both frontend and backend consume.
+ * Provider Registry Types
+ *
+ * TypeScript types for the provider.json registry.
+ * These types define the structure for AI generation providers/models.
  */
 
 // =============================================================================
-// Generation Types
+// Price Types
 // =============================================================================
 
-export type GenerationType =
-  | "text-to-image"
-  | "text-to-video"
-  | "image-to-video"
-  | "text-to-speech"
-  | "text-to-audio"
-  | "text-to-soundtrack"
-  | "text-generation"
-  | "video-to-audio"
+/** Unit of pricing */
+export type PriceUnit = "per_second" | "per_request" | "per_char"
 
-export type VideoGenerationMode =
-  | "text-to-video"
-  | "first-frame"
-  | "first-last-frame"
-  | "components"
+/** Tier-based pricing lookup (e.g., resolution -> price or duration -> price) */
+export type PriceTier = Record<string, number>
+
+/** Provider pricing configuration */
+export interface ProviderPrice {
+  /** Unit of pricing */
+  unit: PriceUnit
+  /** Price per unit (used when no tier pricing) */
+  price_per_unit?: number
+  /** Billing unit size (e.g., 1000 for per 1000 chars) */
+  billing_unit_size?: number
+  /** Tier-based pricing lookup */
+  tier?: PriceTier
+  /** Field key to look up in tier (e.g., "resolution" or "duration") */
+  tier_field_key?: string
+  /** Field key to check for multiplier (e.g., "enable_audio") */
+  multiplier_field_key?: string
+  /** Multiplier value when multiplier_field_key is true */
+  multiplier_value?: number
+}
+
+// =============================================================================
+// Parameter Types
+// =============================================================================
+
+/** Parameter data type */
+export type ParameterType = "string" | "integer" | "float" | "boolean" | "image" | "image_array"
+
+/** Mapping type for API payload */
+export type MappingType = "string" | "integer" | "float" | "boolean" | "image" | "image_array"
+
+/** Accepted values for duration parameters */
+export interface DurationAcceptedValues {
+  /** Step increment for slider */
+  steps: number
+  /** Maximum duration in seconds */
+  max_duration: number
+  /** Minimum duration in seconds */
+  min_duration: number
+}
+
+/** Accepted values for speed parameters */
+export interface SpeedAcceptedValues {
+  /** Step increment for slider */
+  steps: number
+  /** Maximum speed */
+  max_speed: number
+  /** Minimum speed */
+  min_speed: number
+}
+
+/** Type guard for duration accepted values */
+export function isDurationAcceptedValues(value: unknown): value is DurationAcceptedValues {
+  return (
+    typeof value === "object" &&
+    value !== null &&
+    "max_duration" in value &&
+    "min_duration" in value
+  )
+}
+
+/** Type guard for speed accepted values */
+export function isSpeedAcceptedValues(value: unknown): value is SpeedAcceptedValues {
+  return (
+    typeof value === "object" &&
+    value !== null &&
+    "max_speed" in value &&
+    "min_speed" in value
+  )
+}
+
+/** Type guard for array accepted values */
+export function isArrayAcceptedValues(value: unknown): value is (string | number)[] {
+  return Array.isArray(value)
+}
+
+/** Union type for all accepted values */
+export type AcceptedValues = (string | number)[] | DurationAcceptedValues | SpeedAcceptedValues
+
+/** Parameter definition */
+export interface ProviderParameter {
+  /** Parameter key (UI field name) */
+  key: string
+  /** Data type */
+  type: ParameterType
+  /** Notes about the parameter */
+  notes?: string
+  /** Default value */
+  default?: string | number | boolean
+  /** API field mapping */
+  mapping: string
+  /** Whether the parameter is required */
+  required: boolean
+  /** Type for API payload mapping */
+  mapping_type: MappingType
+  /** Accepted values (array for select, object for slider) */
+  accepted_values?: AcceptedValues
+}
+
+/** Default values object (merged into API payload) */
+export interface DefaultValuesEntry {
+  default_values: Record<string, unknown>
+}
+
+/** Type guard for default values entry */
+export function isDefaultValuesEntry(value: unknown): value is DefaultValuesEntry {
+  return (
+    typeof value === "object" &&
+    value !== null &&
+    "default_values" in value
+  )
+}
+
+/** Union type for parameters array items */
+export type ParameterEntry = ProviderParameter | DefaultValuesEntry
 
 // =============================================================================
 // Provider Types
 // =============================================================================
 
-export type ProviderType = "sdk" | "rest" | "websocket"
-export type AuthMethod = "api-key" | "oauth" | "bearer"
+/** Provider tier (quality/speed tier) */
+export type ProviderTier = "Basic" | "Standard" | "Plus" | "Pro" | "Elite"
 
+/** Parent type category */
+export type ProviderParentType =
+  | "avatar"
+  | "text-to-video"
+  | "image-to-video"
+  | "text-to-image"
+  | "text-to-audio"
+  | "text-to-music"
+  | "text-to-speech"
+  | "video-to-audio"
+  | "retake"
+
+/** Provider type (more specific than parent_type) */
+export type ProviderType =
+  | "avatar"
+  | "text-to-video"
+  | "image-to-video"
+  | "text-to-image"
+  | "text-to-audio"
+  | "text-to-music"
+  | "text-to-speech"
+  | "video-to-audio"
+  | "retake"
+  | "reference-to-video"
+  | "first-last-frame-to-video"
+
+/** Full provider definition */
 export interface Provider {
-  /** Display name of the provider */
-  name: string
-  /** Type of API integration */
+  /** Frames per second (null for non-video providers) */
+  fps: number | null
+  /** Link to provider documentation */
+  link: string
+  /** Quality/speed tier */
+  tier: ProviderTier
+  /** Specific provider type */
   type: ProviderType
-  /** NPM package name for SDK-based providers */
-  sdkPackage: string | null
-  /** Authentication method */
-  authMethod: AuthMethod
-  /** Environment variable name for API key */
-  authEnvVar: string
-  /** Base URL for REST APIs (null for SDK-based) */
-  baseUrl: string | null
-  /** List of generation types this provider supports */
-  capabilities: GenerationType[]
-  /** Mapping of standard response fields to provider-specific fields */
-  responseMapping: Record<string, string>
-}
-
-export interface ProviderRegistry {
-  providers: Record<string, Provider>
+  /** Pricing configuration */
+  price: ProviderPrice
+  /** API endpoint identifier */
+  endpoint: string
+  /** Display name */
+  provider: string
+  /** Whether the provider is active */
+  is_active: boolean
+  /** Parameter definitions */
+  parameters: ParameterEntry[]
+  /** Parent type category */
+  parent_type: ProviderParentType
 }
 
 // =============================================================================
-// Model Types
+// Helper Types for Forms
 // =============================================================================
 
-export type PricingUnit = "image" | "second" | "character" | "request" | "generation"
+/** Form values object (key -> value) */
+export type FormValues = Record<string, string | number | boolean | undefined>
 
-export interface ModelPricing {
-  /** Unit of billing */
-  unit: PricingUnit
-  /** Price per unit in USD */
-  pricePerUnit: number
-}
-
+/** Duration range for UI components */
 export interface DurationRange {
   min: number
   max: number
-  /** Step size for duration values (defaults to 1 if not specified) */
-  step?: number
+  step: number
 }
 
-export interface ModelCapabilities {
-  /** Available resolutions (e.g., "1024x1024", "720p") */
-  resolutions?: string[]
-  /** Available aspect ratios (e.g., "16:9", "1:1") */
-  aspectRatios?: string[]
-  /** Duration range in seconds for video/audio */
-  duration?: DurationRange
-  /** Maximum number of outputs per request */
-  maxImages?: number
-  /** Available voice IDs for TTS */
-  voices?: string[]
-  /** Human-readable voice labels */
-  voiceLabels?: Record<string, string>
-  /** Available languages */
-  languages?: string[]
-  /** Supported video generation modes */
-  supportedModes?: VideoGenerationMode[]
-  /** Available genres for music generation */
-  genres?: string[]
-  /** Available categories for soundtrack generation */
-  categories?: string[]
-  /** Maximum tokens for text generation */
-  maxTokens?: number
+/** Speed range for UI components */
+export interface SpeedRange {
+  min: number
+  max: number
+  step: number
 }
 
-export type ParameterType = "string" | "number" | "integer" | "boolean"
-
-export interface ParameterDefinition {
-  /** Data type of the parameter */
-  type: ParameterType
-  /** Default value if not provided */
-  default?: unknown
-  /** Minimum value for numeric types */
-  min?: number
-  /** Maximum value for numeric types */
-  max?: number
-  /** Maximum length for strings */
-  maxLength?: number
-  /** Allowed values */
-  enum?: string[]
-  /** Human-readable description */
-  description?: string
-}
-
-export interface ModelParameters {
-  /** List of required parameter names */
-  required: string[]
-  /** Optional parameters with their definitions */
-  optional: Record<string, ParameterDefinition>
-}
-
-export interface ParameterTransform {
-  /** Maximum value to clamp to */
-  max?: number
-  /** Minimum value to clamp to */
-  min?: number
-  /** Multiply the value by this factor */
-  multiply?: number
-}
-
-export interface ProviderConfig {
-  /** API endpoint path or model identifier */
-  endpoint: string
-  /** HTTP method for REST APIs */
-  method?: "POST" | "GET"
-  /** Mapping of standard params to provider-specific params */
-  parameterMapping?: Record<string, string>
-  /** Transformations to apply to parameters */
-  parameterTransforms?: Record<string, ParameterTransform>
-  /** Default parameters to always include */
-  defaultParams?: Record<string, unknown>
-  /** Model identifier for providers with shared endpoints */
-  model?: string
-}
-
-export interface Model {
-  /** Provider identifier (e.g., "fal-ai") */
-  provider: string
-  /** Type of generation this model performs */
-  type: GenerationType
-  /** Human-readable model name */
-  name: string
-  /** Optional description */
-  description?: string
-  /** Whether this model is currently available */
-  enabled: boolean
-  /** Pricing information */
-  pricing: ModelPricing
-  /** Model capabilities and constraints */
-  capabilities: ModelCapabilities
-  /** Parameter definitions */
-  parameters: ModelParameters
-  /** Provider-specific configuration */
-  providerConfig: ProviderConfig
-}
-
-export interface GenerationModeDefinition {
-  id: VideoGenerationMode
-  label: string
-  description: string
-}
-
-export interface ModelRegistry {
-  models: Record<string, Model>
-  generationModes: Record<string, GenerationModeDefinition>
-}
-
-// =============================================================================
-// Query Result Types
-// =============================================================================
-
-/**
- * Flattened model option for UI dropdowns
- */
-export interface ModelOption {
-  /** Model identifier (e.g., "fal-ai/flux/schnell") */
-  id: string
-  /** Human-readable model name */
-  name: string
-  /** Provider identifier */
-  provider: string
-  /** Provider display name */
-  providerName: string
-  /** Generation type */
-  type: GenerationType
-  /** Pricing information */
-  pricing: ModelPricing
-  /** Model capabilities */
-  capabilities: ModelCapabilities
-}
-
-/**
- * Validation result for model parameters
- */
-export interface ValidationResult {
-  /** Whether validation passed */
-  valid: boolean
-  /** List of validation errors */
-  errors: string[]
-}
-
-// =============================================================================
-// Legacy Type Compatibility
-// =============================================================================
-
-/**
- * Video model in the format expected by existing frontend components
- * @deprecated Use ModelOption instead
- */
-export interface LegacyVideoModel {
-  id: string
-  name: string
-  provider: string
-  resolutions: string[]
-  aspectRatios: string[]
-  durations: DurationRange
-  pricePerSecond: number
-  supportedModes: VideoGenerationMode[]
-}
-
-/**
- * Image model in the format expected by existing frontend components
- * @deprecated Use ModelOption instead
- */
-export interface LegacyImageModel {
-  id: string
-  name: string
-  provider: string
-  resolutions: string[]
-  aspectRatios: string[]
-  pricePerImage: number
-}
-
-/**
- * TTS model in the format expected by existing frontend components
- * @deprecated Use ModelOption instead
- */
-export interface LegacyTTSModel {
-  id: string
-  name: string
-  provider: string
-  voices: string[]
-  pricePerCharacter: number
-}
-
-/**
- * Audio model in the format expected by existing frontend components
- * @deprecated Use ModelOption instead
- */
-export interface LegacyAudioModel {
-  id: string
-  name: string
-  provider: string
-  genres: string[]
-  durations: DurationRange
-  pricePerGeneration: number
-}
-
-/**
- * Soundtrack model in the format expected by existing frontend components
- * @deprecated Use ModelOption instead
- */
-export interface LegacySoundtrackModel {
-  id: string
-  name: string
-  provider: string
-  categories: string[]
-  durations: DurationRange
-  pricePerGeneration: number
-}
 

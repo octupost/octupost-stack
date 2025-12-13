@@ -20,10 +20,8 @@ export const DEV_COOKIE_DOMAIN = `.${DEV_DOMAIN}` as const
 
 export const PORTS = {
   app: 3000,
-  studio: 3001,
-  social: 3002,
+  social: 3002,  // Mixpost runs here
   api: 8000,
-  mixpost: 8001,
 } as const
 
 // =============================================================================
@@ -33,23 +31,15 @@ export const PORTS = {
 export const URLS = {
   app: {
     prod: `https://app.${DOMAIN}`,
-    dev: `http://app.${DEV_DOMAIN}:${PORTS.app}`,
-  },
-  studio: {
-    prod: `https://studio.${DOMAIN}`,
-    dev: `http://studio.${DEV_DOMAIN}:${PORTS.studio}`,
+    dev: `http://localhost:${PORTS.app}`,
   },
   social: {
     prod: `https://social.${DOMAIN}`,
-    dev: `http://social.${DEV_DOMAIN}:${PORTS.social}`,
+    dev: `http://localhost:${PORTS.social}`,
   },
   api: {
     prod: `https://api.${DOMAIN}`,
-    dev: `http://api.${DEV_DOMAIN}:${PORTS.api}`,
-  },
-  mixpost: {
-    prod: `https://mixpost.${DOMAIN}`,
-    dev: `http://mixpost.${DEV_DOMAIN}:${PORTS.mixpost}`,
+    dev: `http://localhost:${PORTS.api}`,
   },
 } as const
 
@@ -67,7 +57,7 @@ export type UrlConfig = typeof URLS[AppName]
 /**
  * Get the appropriate URL for an app based on the current environment.
  * 
- * @param app - The app name (app, studio, social, api, mixpost)
+ * @param app - The app name (app, social, api)
  * @param env - Optional environment override. Defaults to NODE_ENV.
  * @returns The URL for the specified app in the given environment
  */
@@ -133,8 +123,6 @@ export function getCorsOrigins(): string[] {
   return [
     URLS.app.prod,
     URLS.app.dev,
-    URLS.studio.prod,
-    URLS.studio.dev,
     URLS.social.prod,
     URLS.social.dev,
   ]

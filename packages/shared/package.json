@@ -7,13 +7,11 @@
   "exports": {
     ".": "./src/index.ts",
     "./config": "./src/config/index.ts",
-    "./registry": "./src/registry/index.ts",
-    "./registry/models.json": "./src/registry/models.json",
-    "./registry/providers.json": "./src/registry/providers.json",
     "./supabase/client": "./src/supabase/client.ts",
     "./supabase/server": "./src/supabase/server.ts",
     "./supabase/middleware": "./src/supabase/middleware.ts",
-    "./library": "./src/library/index.ts"
+    "./library": "./src/library/index.ts",
+    "./registry": "./src/registry/index.ts"
   },
   "scripts": {
     "lint": "eslint src/",

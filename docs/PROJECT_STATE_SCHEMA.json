@@ -1,0 +1,332 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "octupost-project-state",
+  "title": "Octupost Project State Schema",
+  "description": "Complete state structure for AI video editor with all enums and preferences",
+
+  "_enums": {
+    "aspectRatio": ["16:9", "9:16", "1:1"],
+
+    "videoType": [
+      "news",
+      "faceless",
+      "talking-head",
+      "cinematic",
+      "documentary",
+      "tutorial",
+      "vlog",
+      "3d-animation",
+      "2d-animation",
+      "motion-graphics"
+    ],
+
+    "tone": [
+      "professional",
+      "casual",
+      "energetic",
+      "calm",
+      "humorous",
+      "serious",
+      "inspirational",
+      "motivational",
+      "educational",
+      "conversational",
+      "narrative"
+    ],
+
+    "scriptSplittingStrategy": ["dynamic", "normal", "manual"],
+
+    "overlayStatus": ["prompt", "generating", "generated"],
+
+    "overlayType": ["video", "image", "text", "sound", "caption", "sticker", "shape"]
+  },
+
+  "_defaultState": {
+    "project": {
+      "id": null,
+      "name": "Untitled",
+      "brief": null,
+      "statusMilestones": [],
+      "createdAt": null,
+      "updatedAt": null,
+      "language": "english",
+      "script_splitting_strategy": null
+    },
+
+    "preferences": {
+      "maxBudgetInUSD": 0,
+      "allowCropping": false,
+      "videoFormat": {
+        "aspectRatio": "9:16",
+        "maxDuration": 60,
+        "fps": 30,
+        "resolution": "1080p"
+      },
+      "audience": "general",
+      "contentStyle": {
+        "videoType": "faceless",
+        "tone": "professional",
+        "pace": "medium"
+      }
+    },
+
+    "projectData": "project",
+    "script": null,
+
+    "voiceover": {
+      "src": null,
+      "duration": null,
+      "speed": null,
+      "emotion": null,
+      "provider": null,
+      "voice": null,
+      "style": null
+    },
+
+    "transcription": {
+      "text": null,
+      "segments": [],
+      "words": [],
+      "language": null
+    },
+
+    "scenes": [],
+
+    "prompts": [],
+
+    "_promptSchema": {
+      "id": "prompt_abc123",
+      "sceneIndex": 0,
+      "type": "video",
+      "instruction": "Person working at laptop in modern office",
+      "params": {
+        "keywords": ["person laptop", "office work", "typing"],
+        "style": null,
+        "duration": 5,
+        "aspectRatio": "9:16",
+        "provider": "pexels"
+      },
+      "status": "pending",
+      "resolvedOverlayId": null,
+      "createdBy": "writer",
+      "createdAt": "2024-01-01T00:00:00Z",
+      "resolvedAt": null,
+      "errorMessage": null
+    },
+
+    "_promptTypes": ["video", "image", "audio", "music", "voiceover", "text", "caption", "sticker"],
+    "_promptStatus": ["pending", "searching", "generating", "resolved", "failed"],
+
+    "timeline": {
+      "overlays": [],
+      "durationInFrames": 0,
+      "width": 1080,
+      "height": 1920,
+      "fps": 30,
+      "backgroundColor": "#000000"
+    },
+
+    "metadata": {
+      "version": "1.0.0",
+      "lastAgentAction": null,
+      "lastUserAction": null,
+      "revisionCount": 0
+    }
+  },
+
+  "_overlaySchemas": {
+    "video": {
+      "id": 0,
+      "type": "video",
+      "promptId": "prompt_abc123",
+      "status": "prompt",
+      "prompt": "Video generation prompt or null for stock",
+      "from": 0,
+      "durationInFrames": 90,
+      "left": 0,
+      "top": 0,
+      "width": 1080,
+      "height": 1920,
+      "row": 0,
+      "rotation": 0,
+      "isDragging": false,
+      "src": null,
+      "content": null,
+      "videoStartTime": 0,
+      "speed": 1,
+      "styles": {
+        "opacity": 1,
+        "zIndex": 100,
+        "objectFit": "cover",
+        "filter": null,
+        "animation": {
+          "enter": null,
+          "exit": null
+        }
+      }
+    },
+
+    "text": {
+      "id": 1,
+      "type": "text",
+      "promptId": "prompt_def456",
+      "from": 0,
+      "durationInFrames": 90,
+      "left": 100,
+      "top": 800,
+      "width": 880,
+      "height": 200,
+      "row": 1,
+      "rotation": 0,
+      "isDragging": false,
+      "content": "Text content here",
+      "styles": {
+        "opacity": 1,
+        "zIndex": 200,
+        "fontSize": "3rem",
+        "fontWeight": "700",
+        "color": "#FFFFFF",
+        "backgroundColor": "",
+        "fontFamily": "font-sans",
+        "fontStyle": "normal",
+        "textDecoration": "none",
+        "lineHeight": "1.2",
+        "letterSpacing": "0",
+        "textAlign": "center",
+        "textShadow": null,
+        "animation": {
+          "enter": "fade",
+          "exit": "fade"
+        }
+      }
+    },
+
+    "sound": {
+      "id": 2,
+      "type": "sound",
+      "promptId": "prompt_ghi789",
+      "from": 0,
+      "durationInFrames": 900,
+      "left": 0,
+      "top": 0,
+      "width": 1920,
+      "height": 100,
+      "row": 2,
+      "rotation": 0,
+      "isDragging": false,
+      "content": "Audio track name",
+      "src": "https://example.com/audio.mp3",
+      "startFromSound": 0,
+      "mediaSrcDuration": null,
+      "styles": {
+        "opacity": 1,
+        "volume": 0.8,
+        "fadeIn": 2,
+        "fadeOut": 2
+      }
+    },
+
+    "caption": {
+      "id": 3,
+      "type": "caption",
+      "promptId": null,
+      "from": 0,
+      "durationInFrames": 900,
+      "left": 50,
+      "top": 1600,
+      "width": 980,
+      "height": 250,
+      "row": 3,
+      "rotation": 0,
+      "isDragging": false,
+      "template": "default",
+      "captions": [
+        {
+          "text": "Caption text",
+          "startMs": 0,
+          "endMs": 3000,
+          "timestampMs": null,
+          "confidence": null,
+          "words": [
+            {
+              "word": "Caption",
+              "startMs": 0,
+              "endMs": 500,
+              "confidence": 0.98
+            }
+          ]
+        }
+      ],
+      "styles": {
+        "fontFamily": "Inter, sans-serif",
+        "fontSize": "24px",
+        "lineHeight": 1.2,
+        "textAlign": "center",
+        "color": "#ffffff",
+        "backgroundColor": "rgba(0,0,0,0.7)",
+        "padding": "8px 16px",
+        "borderRadius": "4px",
+        "highlightStyle": {
+          "backgroundColor": "#ffeb3b",
+          "color": "#000000",
+          "scale": 1.1
+        }
+      }
+    },
+
+    "image": {
+      "id": 4,
+      "type": "image",
+      "promptId": null,
+      "from": 0,
+      "durationInFrames": 90,
+      "left": 0,
+      "top": 0,
+      "width": 500,
+      "height": 500,
+      "row": 4,
+      "rotation": 0,
+      "isDragging": false,
+      "src": "https://example.com/image.jpg",
+      "content": null,
+      "styles": {
+        "opacity": 1,
+        "zIndex": 150,
+        "objectFit": "cover",
+        "borderRadius": null,
+        "filter": null,
+        "animation": {
+          "enter": "scale",
+          "exit": "fade"
+        }
+      }
+    },
+
+    "sticker": {
+      "id": 5,
+      "type": "sticker",
+      "promptId": null,
+      "from": 0,
+      "durationInFrames": 90,
+      "left": 800,
+      "top": 200,
+      "width": 200,
+      "height": 200,
+      "row": 5,
+      "rotation": 0,
+      "isDragging": false,
+      "content": "emoji-fire",
+      "category": "Emojis",
+      "styles": {
+        "opacity": 1,
+        "zIndex": 300,
+        "scale": 1,
+        "filter": null,
+        "animation": {
+          "enter": "bounce",
+          "exit": "fade"
+        }
+      }
+    }
+  }
+}

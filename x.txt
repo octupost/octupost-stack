@@ -1,0 +1,2 @@
+      "multiplier_field_key": ["enable_audio"],
+      "multiplier_value": 1.5

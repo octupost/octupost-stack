@@ -1,377 +1,330 @@
 /**
- * AI Model Registry
- * 
- * Centralized configuration for all AI models across the Octupost platform.
- * This module provides query functions to access model and provider information.
- * 
- * @example
- * ```typescript
- * import { getModel, getModelsByType, getModelOptionsForType } from "@octupost/shared/registry"
- * 
- * // Get a specific model
- * const model = getModel("fal-ai/flux/schnell")
- * 
- * // Get all image models for a dropdown
- * const imageModels = getModelOptionsForType("text-to-image")
- * ```
+ * Provider Registry
+ *
+ * Centralized provider configuration and query helpers.
+ * Import from "@octupost/shared/registry"
  */
 
-import modelsData from "./models.json"
-import providersData from "./providers.json"
+import providersData from "./provider.json"
 import type {
-  Model,
   Provider,
-  GenerationType,
-  ModelRegistry,
-  ProviderRegistry,
-  ModelOption,
-  ValidationResult,
-  VideoGenerationMode,
-  GenerationModeDefinition,
-  LegacyVideoModel,
-  LegacyImageModel,
-  LegacyTTSModel,
-  LegacyAudioModel,
-  LegacySoundtrackModel,
+  ProviderParameter,
+  ProviderParentType,
+  ProviderType,
+  ProviderTier,
+  ParameterEntry,
   DurationRange,
+  SpeedRange,
+  AcceptedValues,
+  FormValues,
+} from "./types"
+import {
+  isDefaultValuesEntry,
+  isDurationAcceptedValues,
+  isSpeedAcceptedValues,
+  isArrayAcceptedValues,
 } from "./types"
 
-// Re-export types
+// =============================================================================
+// Re-exports
+// =============================================================================
+
 export * from "./types"
-
-// Type assertions for JSON imports
-const models = modelsData as unknown as ModelRegistry
-const providers = providersData as ProviderRegistry
+export * from "./pricing"
 
 // =============================================================================
-// Model Queries
+// Provider Data
 // =============================================================================
 
-/**
- * Get a model by its ID
- */
-export function getModel(modelId: string): Model | undefined {
-  return models.models[modelId]
-}
-
-/**
- * Get all models (including disabled ones)
- */
-export function getAllModels(): Record<string, Model> {
-  return models.models
-}
-
-/**
- * Get only enabled models
- */
-export function getEnabledModels(): Record<string, Model> {
-  return Object.fromEntries(
-    Object.entries(models.models).filter(([, model]) => model.enabled)
-  )
-}
-
-/**
- * Get enabled models filtered by generation type
- */
-export function getModelsByType(type: GenerationType): Record<string, Model> {
-  return Object.fromEntries(
-    Object.entries(models.models).filter(
-      ([, model]) => model.type === type && model.enabled
-    )
-  )
-}
-
-/**
- * Get enabled models filtered by provider
- */
-export function getModelsByProvider(providerId: string): Record<string, Model> {
-  return Object.fromEntries(
-    Object.entries(models.models).filter(
-      ([, model]) => model.provider === providerId && model.enabled
-    )
-  )
-}
-
-/**
- * Get model IDs for a specific generation type
- */
-export function getModelIds(type: GenerationType): string[] {
-  return Object.keys(getModelsByType(type))
-}
+/** All providers from the registry */
+export const providers: Provider[] = providersData as Provider[]
 
 // =============================================================================
 // Provider Queries
 // =============================================================================
 
 /**
- * Get a provider by its ID
+ * Get a provider by its endpoint identifier.
  */
-export function getProvider(providerId: string): Provider | undefined {
-  return providers.providers[providerId]
+export function getProviderByEndpoint(endpoint: string): Provider | undefined {
+  return providers.find((p) => p.endpoint === endpoint)
 }
 
 /**
- * Get all providers
+ * Get all providers of a specific type.
  */
-export function getAllProviders(): Record<string, Provider> {
-  return providers.providers
+export function getProvidersByType(type: ProviderType): Provider[] {
+  return providers.filter((p) => p.type === type && p.is_active)
 }
 
 /**
- * Get the provider for a specific model
+ * Get all providers of a specific parent type.
  */
-export function getProviderForModel(modelId: string): Provider | undefined {
-  const model = getModel(modelId)
-  if (!model) return undefined
-  return getProvider(model.provider)
-}
-
-// =============================================================================
-// Generation Mode Queries
-// =============================================================================
-
-/**
- * Get all video generation modes
- */
-export function getGenerationModes(): GenerationModeDefinition[] {
-  return Object.values(models.generationModes)
+export function getProvidersByParentType(parentType: ProviderParentType): Provider[] {
+  return providers.filter((p) => p.parent_type === parentType && p.is_active)
 }
 
 /**
- * Get a specific generation mode by ID
+ * Get all active providers.
  */
-export function getGenerationMode(modeId: VideoGenerationMode): GenerationModeDefinition | undefined {
-  return models.generationModes[modeId]
+export function getActiveProviders(): Provider[] {
+  return providers.filter((p) => p.is_active)
+}
+
+/**
+ * Get all providers of a specific tier.
+ */
+export function getProvidersByTier(tier: ProviderTier): Provider[] {
+  return providers.filter((p) => p.tier === tier && p.is_active)
 }
 
 // =============================================================================
-// Validation
+// Parameter Helpers
 // =============================================================================
 
 /**
- * Check if a model ID is valid and enabled
+ * Get displayable parameters (excludes default_values entries).
  */
-export function isValidModel(modelId: string): boolean {
-  const model = getModel(modelId)
-  return model !== undefined && model.enabled
+export function getProviderParameters(provider: Provider): ProviderParameter[] {
+  return provider.parameters.filter(
+    (p): p is ProviderParameter => !isDefaultValuesEntry(p)
+  )
 }
 
 /**
- * Validate parameters against a model's schema
+ * Get the default values object for a provider.
  */
-export function validateModelParameters(
-  modelId: string,
-  params: Record<string, unknown>
-): ValidationResult {
-  const model = getModel(modelId)
-  if (!model) {
-    return { valid: false, errors: [`Unknown model: ${modelId}`] }
-  }
+export function getProviderDefaultValues(provider: Provider): Record<string, unknown> {
+  const entry = provider.parameters.find(isDefaultValuesEntry)
+  return entry?.default_values ?? {}
+}
 
-  const errors: string[] = []
+/**
+ * Get a specific parameter by key.
+ */
+export function getParameter(provider: Provider, key: string): ProviderParameter | undefined {
+  return getProviderParameters(provider).find((p) => p.key === key)
+}
 
-  // Check required parameters
-  for (const required of model.parameters.required) {
-    if (!(required in params) || params[required] === undefined || params[required] === null) {
-      errors.push(`Missing required parameter: ${required}`)
+/**
+ * Check if a provider has a specific parameter.
+ */
+export function hasParameter(provider: Provider, key: string): boolean {
+  return getParameter(provider, key) !== undefined
+}
+
+// =============================================================================
+// Parameter Value Helpers
+// =============================================================================
+
+/**
+ * Get duration range from a provider.
+ * Returns null if provider doesn't have a duration parameter.
+ */
+export function getDurationRange(provider: Provider): DurationRange | null {
+  const param = getParameter(provider, "duration")
+  if (!param?.accepted_values) return null
+
+  if (isDurationAcceptedValues(param.accepted_values)) {
+    return {
+      min: param.accepted_values.min_duration,
+      max: param.accepted_values.max_duration,
+      step: param.accepted_values.steps || 1,
     }
   }
 
-  // Validate optional parameters
-  for (const [key, value] of Object.entries(params)) {
-    if (model.parameters.required.includes(key)) continue
-    
-    const def = model.parameters.optional[key]
-    if (!def) continue // Unknown parameter, allow it to pass through
+  return null
+}
 
-    // Type checking
-    if (def.type === "integer" || def.type === "number") {
-      if (typeof value !== "number") {
-        errors.push(`${key} must be a number`)
-        continue
-      }
-      if (def.min !== undefined && value < def.min) {
-        errors.push(`${key} must be >= ${def.min}`)
-      }
-      if (def.max !== undefined && value > def.max) {
-        errors.push(`${key} must be <= ${def.max}`)
-      }
-    }
+/**
+ * Get speed range from a provider.
+ * Returns null if provider doesn't have a speed parameter.
+ */
+export function getSpeedRange(provider: Provider): SpeedRange | null {
+  const param = getParameter(provider, "speech_speed")
+  if (!param?.accepted_values) return null
 
-    if (def.type === "string") {
-      if (typeof value !== "string") {
-        errors.push(`${key} must be a string`)
-        continue
-      }
-      if (def.maxLength !== undefined && value.length > def.maxLength) {
-        errors.push(`${key} must be <= ${def.maxLength} characters`)
-      }
-      if (def.enum !== undefined && !def.enum.includes(value)) {
-        errors.push(`${key} must be one of: ${def.enum.join(", ")}`)
-      }
-    }
-
-    if (def.type === "boolean" && typeof value !== "boolean") {
-      errors.push(`${key} must be a boolean`)
+  if (isSpeedAcceptedValues(param.accepted_values)) {
+    return {
+      min: param.accepted_values.min_speed,
+      max: param.accepted_values.max_speed,
+      step: param.accepted_values.steps || 0.1,
     }
   }
 
-  return { valid: errors.length === 0, errors }
+  return null
+}
+
+/**
+ * Get accepted values array for a parameter.
+ * Returns empty array if not an array type.
+ */
+export function getAcceptedValuesArray(
+  acceptedValues: AcceptedValues | undefined
+): (string | number)[] {
+  if (!acceptedValues) return []
+  if (isArrayAcceptedValues(acceptedValues)) return acceptedValues
+  return []
+}
+
+/**
+ * Get resolution options from a provider.
+ */
+export function getResolutions(provider: Provider): string[] {
+  const param = getParameter(provider, "resolution")
+  if (!param?.accepted_values) return []
+  return getAcceptedValuesArray(param.accepted_values) as string[]
+}
+
+/**
+ * Get aspect ratio options from a provider.
+ */
+export function getAspectRatios(provider: Provider): string[] {
+  const param = getParameter(provider, "aspect_ratio")
+  if (!param?.accepted_values) return []
+  return getAcceptedValuesArray(param.accepted_values) as string[]
+}
+
+/**
+ * Get voice options from a provider.
+ */
+export function getVoices(provider: Provider): string[] {
+  const param = getParameter(provider, "voice")
+  if (!param?.accepted_values) return []
+  return getAcceptedValuesArray(param.accepted_values) as string[]
+}
+
+/**
+ * Get voice emotion options from a provider.
+ */
+export function getVoiceEmotions(provider: Provider): string[] {
+  const param = getParameter(provider, "voice_emotion")
+  if (!param?.accepted_values) return []
+  return getAcceptedValuesArray(param.accepted_values) as string[]
+}
+
+/**
+ * Get avatar options from a provider.
+ */
+export function getAvatars(provider: Provider): string[] {
+  const param = getParameter(provider, "avatar")
+  if (!param?.accepted_values) return []
+  return getAcceptedValuesArray(param.accepted_values) as string[]
+}
+
+/**
+ * Get FPS options from a provider.
+ */
+export function getFpsOptions(provider: Provider): number[] {
+  const param = getParameter(provider, "fps")
+  if (!param?.accepted_values) return []
+  return getAcceptedValuesArray(param.accepted_values) as number[]
 }
 
 // =============================================================================
-// UI Helpers
+// Form Initialization
 // =============================================================================
 
 /**
- * Get model options formatted for UI dropdowns
+ * Get initial form values for a provider (uses defaults from parameters).
  */
-export function getModelOptionsForType(type: GenerationType): ModelOption[] {
-  const typeModels = getModelsByType(type)
+export function getInitialFormValues(provider: Provider): FormValues {
+  const values: FormValues = {}
+  const params = getProviderParameters(provider)
 
-  return Object.entries(typeModels).map(([id, model]) => ({
-    id,
-    name: model.name,
-    provider: model.provider,
-    providerName: getProvider(model.provider)?.name || model.provider,
-    type: model.type,
-    pricing: model.pricing,
-    capabilities: model.capabilities,
-  }))
-}
-
-/**
- * Calculate estimated cost for a generation request
- */
-export function calculateCost(modelId: string, quantity: number = 1): number {
-  const model = getModel(modelId)
-  if (!model) return 0
-
-  return model.pricing.pricePerUnit * quantity
-}
-
-/**
- * Format price for display
- */
-export function formatPrice(price: number): string {
-  if (price < 0.01) {
-    return `$${price.toFixed(5)}`
-  }
-  return `$${price.toFixed(2)}`
-}
-
-// =============================================================================
-// Legacy Format Converters (for backward compatibility)
-// =============================================================================
-
-/**
- * Convert registry models to legacy VideoModel format
- * @deprecated Use getModelOptionsForType("text-to-video") instead
- */
-export function getLegacyVideoModels(): LegacyVideoModel[] {
-  const videoModels = getModelsByType("text-to-video")
-  const i2vModels = getModelsByType("image-to-video")
-  const allModels = { ...videoModels, ...i2vModels }
-
-  return Object.entries(allModels).map(([id, model]) => ({
-    id,
-    name: model.name,
-    provider: getProvider(model.provider)?.name || model.provider,
-    resolutions: model.capabilities.resolutions || [],
-    aspectRatios: model.capabilities.aspectRatios || [],
-    durations: model.capabilities.duration || { min: 4, max: 8 },
-    pricePerSecond: model.pricing.pricePerUnit,
-    supportedModes: model.capabilities.supportedModes || ["text-to-video"],
-  }))
-}
-
-/**
- * Convert registry models to legacy ImageModel format
- * @deprecated Use getModelOptionsForType("text-to-image") instead
- */
-export function getLegacyImageModels(): LegacyImageModel[] {
-  const imageModels = getModelsByType("text-to-image")
-
-  return Object.entries(imageModels).map(([id, model]) => ({
-    id,
-    name: model.name,
-    provider: getProvider(model.provider)?.name || model.provider,
-    resolutions: model.capabilities.resolutions || [],
-    aspectRatios: model.capabilities.aspectRatios || [],
-    pricePerImage: model.pricing.pricePerUnit,
-  }))
-}
-
-/**
- * Convert registry models to legacy TTSModel format
- * @deprecated Use getModelOptionsForType("text-to-speech") instead
- */
-export function getLegacyTTSModels(): LegacyTTSModel[] {
-  const ttsModels = getModelsByType("text-to-speech")
-
-  return Object.entries(ttsModels).map(([id, model]) => ({
-    id,
-    name: model.name,
-    provider: getProvider(model.provider)?.name || model.provider,
-    voices: model.capabilities.voices || [],
-    pricePerCharacter: model.pricing.pricePerUnit,
-  }))
-}
-
-/**
- * Convert registry models to legacy AudioModel format
- * @deprecated Use getModelOptionsForType("text-to-audio") instead
- */
-export function getLegacyAudioModels(): LegacyAudioModel[] {
-  const audioModels = getModelsByType("text-to-audio")
-
-  return Object.entries(audioModels).map(([id, model]) => ({
-    id,
-    name: model.name,
-    provider: getProvider(model.provider)?.name || model.provider,
-    genres: model.capabilities.genres || [],
-    durations: model.capabilities.duration || { min: 30, max: 120 },
-    pricePerGeneration: model.pricing.pricePerUnit,
-  }))
-}
-
-/**
- * Convert registry models to legacy SoundtrackModel format
- * @deprecated Use getModelOptionsForType("text-to-soundtrack") instead
- */
-export function getLegacySoundtrackModels(): LegacySoundtrackModel[] {
-  const soundtrackModels = getModelsByType("text-to-soundtrack")
-
-  return Object.entries(soundtrackModels).map(([id, model]) => ({
-    id,
-    name: model.name,
-    provider: getProvider(model.provider)?.name || model.provider,
-    categories: model.capabilities.categories || [],
-    durations: model.capabilities.duration || { min: 5, max: 60 },
-    pricePerGeneration: model.pricing.pricePerUnit,
-  }))
-}
-
-/**
- * Get voice display names for TTS models
- */
-export function getVoiceDisplayNames(): Record<string, string> {
-  const ttsModels = getModelsByType("text-to-speech")
-  const voiceLabels: Record<string, string> = {}
-
-  for (const model of Object.values(ttsModels)) {
-    if (model.capabilities.voiceLabels) {
-      Object.assign(voiceLabels, model.capabilities.voiceLabels)
+  for (const param of params) {
+    if (param.default !== undefined) {
+      values[param.key] = param.default
     }
   }
 
-  return voiceLabels
+  return values
+}
+
+// =============================================================================
+// Provider Display Helpers
+// =============================================================================
+
+/**
+ * Get display name for a provider.
+ */
+export function getDisplayName(provider: Provider): string {
+  return provider.provider
 }
 
 /**
- * Get video generation modes in legacy format
+ * Get the FPS value for a provider (null for non-video providers).
  */
-export function getLegacyVideoGenerationModes(): { id: VideoGenerationMode; label: string; description: string }[] {
-  return getGenerationModes()
+export function getFps(provider: Provider): number | null {
+  return provider.fps
 }
+
+/**
+ * Check if provider supports audio generation.
+ */
+export function supportsAudio(provider: Provider): boolean {
+  return hasParameter(provider, "enable_audio")
+}
+
+/**
+ * Check if provider supports prompt enhancement.
+ */
+export function supportsPromptEnhancement(provider: Provider): boolean {
+  return hasParameter(provider, "enhance_prompt")
+}
+
+/**
+ * Get tier badge color class.
+ */
+export function getTierBadgeClass(tier: ProviderTier): string {
+  switch (tier) {
+    case "Elite":
+      return "bg-purple-500/10 text-purple-500 border-purple-500/20"
+    case "Pro":
+      return "bg-blue-500/10 text-blue-500 border-blue-500/20"
+    case "Plus":
+      return "bg-green-500/10 text-green-500 border-green-500/20"
+    case "Standard":
+      return "bg-yellow-500/10 text-yellow-500 border-yellow-500/20"
+    case "Basic":
+      return "bg-gray-500/10 text-gray-500 border-gray-500/20"
+    default:
+      return "bg-gray-500/10 text-gray-500 border-gray-500/20"
+  }
+}
+
+// =============================================================================
+// Generation Mode Support
+// =============================================================================
+
+/** Video generation mode (maps to provider types) */
+export type VideoGenerationMode = "text-to-video" | "first-frame" | "first-last-frame" | "components"
+
+/**
+ * Check if a provider supports a specific video generation mode.
+ */
+export function supportsVideoMode(provider: Provider, mode: VideoGenerationMode): boolean {
+  const { parent_type, type } = provider
+
+  switch (mode) {
+    case "text-to-video":
+      return parent_type === "text-to-video" && type === "text-to-video"
+    case "first-frame":
+      return parent_type === "image-to-video" && type === "image-to-video"
+    case "first-last-frame":
+      return parent_type === "image-to-video" && type === "first-last-frame-to-video"
+    case "components":
+      return parent_type === "image-to-video" && type === "reference-to-video"
+    default:
+      return false
+  }
+}
+
+/**
+ * Get providers that support a specific video generation mode.
+ */
+export function getProvidersForVideoMode(mode: VideoGenerationMode): Provider[] {
+  return getActiveProviders().filter((p) => supportsVideoMode(p, mode))
+}
+
 
