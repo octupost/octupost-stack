@@ -1,14 +1,14 @@
 """
 Registry reader for loading and querying model/provider configurations.
 
-This module reads the JSON registry files from the shared package and provides
-query functions similar to the TypeScript implementation.
+This module reads provider.json from the shared package and provides
+query functions for model lookups, validation, and parameter handling.
 """
 
 import json
-import os
+import math
 from pathlib import Path
-from typing import Any, Optional
+from typing import Any, Optional, Union
 
 from .types import (
     GenerationType,
@@ -32,7 +32,7 @@ def _get_registry_path() -> Path:
     return registry_path
 
 
-def _load_json(filename: str) -> dict[str, Any]:
+def _load_json(filename: str) -> Any:
     """Load a JSON file from the registry directory."""
     registry_path = _get_registry_path()
     file_path = registry_path / filename
@@ -46,30 +46,31 @@ def _load_json(filename: str) -> dict[str, Any]:
 
 # Lazy-loaded registry data
 _models_cache: Optional[dict[str, Any]] = None
-_providers_cache: Optional[dict[str, Any]] = None
 
 
 def _get_models_data() -> dict[str, Any]:
-    """Get the models registry data (cached)."""
+    """
+    Load and index models from provider.json by endpoint.
+    
+    The provider.json file contains an array of model configurations.
+    We index them by endpoint for quick lookup.
+    """
     global _models_cache
     if _models_cache is None:
-        _models_cache = _load_json("models.json")
+        raw_data = _load_json("provider.json")  # Array of model configs
+        models = {}
+        for model in raw_data:
+            endpoint = model.get("endpoint")
+            if endpoint:
+                models[endpoint] = model
+        _models_cache = {"models": models}
     return _models_cache
-
-
-def _get_providers_data() -> dict[str, Any]:
-    """Get the providers registry data (cached)."""
-    global _providers_cache
-    if _providers_cache is None:
-        _providers_cache = _load_json("providers.json")
-    return _providers_cache
 
 
 def reload_registry() -> None:
     """Force reload of registry data from disk."""
-    global _models_cache, _providers_cache
+    global _models_cache
     _models_cache = None
-    _providers_cache = None
 
 
 # =============================================================================
@@ -77,7 +78,7 @@ def reload_registry() -> None:
 # =============================================================================
 
 def get_model(model_id: str) -> Optional[Model]:
-    """Get a model by its ID."""
+    """Get a model by its ID (endpoint)."""
     models = _get_models_data().get("models", {})
     return models.get(model_id)
 
@@ -88,12 +89,12 @@ def get_all_models() -> dict[str, Model]:
 
 
 def get_enabled_models() -> dict[str, Model]:
-    """Get only enabled models."""
+    """Get only enabled/active models."""
     models = get_all_models()
     return {
         model_id: model
         for model_id, model in models.items()
-        if model.get("enabled", False)
+        if model.get("is_active", False)
     }
 
 
@@ -103,17 +104,17 @@ def get_models_by_type(gen_type: GenerationType) -> dict[str, Model]:
     return {
         model_id: model
         for model_id, model in models.items()
-        if model.get("type") == gen_type and model.get("enabled", False)
+        if model.get("type") == gen_type and model.get("is_active", False)
     }
 
 
-def get_models_by_provider(provider_id: str) -> dict[str, Model]:
-    """Get enabled models filtered by provider."""
+def get_models_by_provider(provider_name: str) -> dict[str, Model]:
+    """Get enabled models filtered by provider name."""
     models = get_all_models()
     return {
         model_id: model
         for model_id, model in models.items()
-        if model.get("provider") == provider_id and model.get("enabled", False)
+        if model.get("provider") == provider_name and model.get("is_active", False)
     }
 
 
@@ -127,14 +128,54 @@ def get_model_ids(gen_type: GenerationType) -> list[str]:
 # =============================================================================
 
 def get_provider(provider_id: str) -> Optional[Provider]:
-    """Get a provider by its ID."""
-    providers = _get_providers_data().get("providers", {})
-    return providers.get(provider_id)
+    """
+    Get a provider configuration.
+    
+    Note: In the new schema, providers are embedded in model configs.
+    This returns a synthesized provider object for compatibility.
+    """
+    # Build provider from first matching model
+    models = get_all_models()
+    for model in models.values():
+        if model.get("provider") == provider_id:
+            return {
+                "name": provider_id,
+                "type": "sdk",
+                "sdkPackage": "fal-client",
+                "authMethod": "api-key",
+                "authEnvVar": "FAL_KEY",
+                "baseUrl": None,
+                "capabilities": [model.get("type", "")],
+                "responseMapping": {},
+            }
+    return None
 
 
 def get_all_providers() -> dict[str, Provider]:
-    """Get all providers."""
-    return _get_providers_data().get("providers", {})
+    """Get all unique providers from models."""
+    providers: dict[str, Provider] = {}
+    models = get_all_models()
+    
+    for model in models.values():
+        provider_name = model.get("provider", "")
+        if provider_name and provider_name not in providers:
+            providers[provider_name] = {
+                "name": provider_name,
+                "type": "sdk",
+                "sdkPackage": "fal-client",
+                "authMethod": "api-key",
+                "authEnvVar": "FAL_KEY",
+                "baseUrl": None,
+                "capabilities": [],
+                "responseMapping": {},
+            }
+        # Add capability if not already present
+        if provider_name:
+            model_type = model.get("type", "")
+            if model_type and model_type not in providers[provider_name]["capabilities"]:
+                providers[provider_name]["capabilities"].append(model_type)
+    
+    return providers
 
 
 def get_provider_for_model(model_id: str) -> Optional[Provider]:
@@ -151,13 +192,17 @@ def get_provider_for_model(model_id: str) -> Optional[Provider]:
 
 def get_generation_modes() -> list[GenerationModeDefinition]:
     """Get all video generation modes."""
-    modes = _get_models_data().get("generationModes", {})
-    return list(modes.values())
+    return [
+        {"id": "text-to-video", "label": "Text to Video", "description": "Generate video from text prompt"},
+        {"id": "first-frame", "label": "Image to Video", "description": "Generate video from an image"},
+        {"id": "first-last-frame", "label": "First & Last Frame", "description": "Generate video between two frames"},
+        {"id": "components", "label": "Components", "description": "Build video from components"},
+    ]
 
 
 def get_generation_mode(mode_id: VideoGenerationMode) -> Optional[GenerationModeDefinition]:
     """Get a specific generation mode by ID."""
-    modes = _get_models_data().get("generationModes", {})
+    modes = {m["id"]: m for m in get_generation_modes()}
     return modes.get(mode_id)
 
 
@@ -168,7 +213,16 @@ def get_generation_mode(mode_id: VideoGenerationMode) -> Optional[GenerationMode
 def is_valid_model(model_id: str) -> bool:
     """Check if a model ID is valid and enabled."""
     model = get_model(model_id)
-    return model is not None and model.get("enabled", False)
+    return model is not None and model.get("is_active", False)
+
+
+def _get_param_definitions(model: dict) -> dict[str, dict]:
+    """Extract parameter definitions from model config, indexed by key."""
+    param_defs = {}
+    for param in model.get("parameters", []):
+        if isinstance(param, dict) and "key" in param:
+            param_defs[param["key"]] = param
+    return param_defs
 
 
 def validate_params(
@@ -176,10 +230,13 @@ def validate_params(
     params: dict[str, Any],
 ) -> ValidationResult:
     """
-    Validate parameters against a model's schema.
+    Validate parameters against a model's accepted_values from provider.json.
+    
+    Note: This validation is lenient - it only checks values that are provided.
+    Required parameters with defaults will be filled in by the transformer.
     
     Args:
-        model_id: The model identifier
+        model_id: The model identifier (endpoint)
         params: Parameters to validate
         
     Returns:
@@ -190,56 +247,80 @@ def validate_params(
         return {"valid": False, "errors": [f"Unknown model: {model_id}"]}
     
     errors: list[str] = []
-    parameters = model.get("parameters", {})
-    required = parameters.get("required", [])
-    optional = parameters.get("optional", {})
+    param_defs = _get_param_definitions(model)
     
-    # Check required parameters
-    for req_param in required:
-        if req_param not in params or params[req_param] is None:
-            errors.append(f"Missing required parameter: {req_param}")
-    
-    # Validate optional parameters
-    for key, value in params.items():
-        if key in required:
-            continue
-            
-        param_def = optional.get(key)
-        if not param_def:
-            continue  # Unknown parameter, allow it to pass through
+    # Check required parameters that are truly required (no default, not a boolean with implicit false)
+    for key, param_def in param_defs.items():
+        required = param_def.get("required", False)
+        param_type = param_def.get("type", "string")
         
-        param_type = param_def.get("type")
+        if required and key not in params:
+            # Check if there's a default value
+            has_default = "default" in param_def
+            is_empty_default = param_def.get("default") == ""
+            
+            # Booleans have implicit false default, skip validation
+            if param_type == "boolean":
+                continue
+            
+            # Skip if has a non-empty default
+            if has_default and not is_empty_default:
+                continue
+            
+            # Only error on truly required params with no default
+            errors.append(f"Missing required parameter: {key}")
+            continue
+        
+        if key not in params:
+            continue
+        
+        value = params[key]
+        accepted = param_def.get("accepted_values")
         
         # Type checking
-        if param_type in ("integer", "number"):
-            if not isinstance(value, (int, float)):
-                errors.append(f"{key} must be a number")
+        if param_type == "integer" and not isinstance(value, int):
+            # Allow float that is whole number
+            if isinstance(value, float) and value.is_integer():
+                pass
+            else:
+                errors.append(f"{key} must be an integer")
                 continue
-            
-            min_val = param_def.get("min")
-            max_val = param_def.get("max")
-            
-            if min_val is not None and value < min_val:
-                errors.append(f"{key} must be >= {min_val}")
-            if max_val is not None and value > max_val:
-                errors.append(f"{key} must be <= {max_val}")
         
-        elif param_type == "string":
-            if not isinstance(value, str):
+        if param_type == "float" and not isinstance(value, (int, float)):
+            errors.append(f"{key} must be a number")
+            continue
+        
+        if param_type == "boolean" and not isinstance(value, bool):
+            errors.append(f"{key} must be a boolean")
+            continue
+        
+        if param_type == "string" and not isinstance(value, str):
+            # Allow numbers that will be converted to strings
+            if not isinstance(value, (int, float)):
                 errors.append(f"{key} must be a string")
                 continue
-            
-            max_length = param_def.get("maxLength")
-            enum_values = param_def.get("enum")
-            
-            if max_length is not None and len(value) > max_length:
-                errors.append(f"{key} must be <= {max_length} characters")
-            if enum_values is not None and value not in enum_values:
-                errors.append(f"{key} must be one of: {', '.join(enum_values)}")
         
-        elif param_type == "boolean":
-            if not isinstance(value, bool):
-                errors.append(f"{key} must be a boolean")
+        # Validate against accepted_values
+        if accepted is not None:
+            if isinstance(accepted, list):
+                # Check if this is a list of objects (like avatar accepted_values)
+                if len(accepted) > 0 and isinstance(accepted[0], dict):
+                    # For object lists, check if value matches any 'name' field
+                    valid_names = [item.get("name") for item in accepted if isinstance(item, dict)]
+                    if value not in valid_names:
+                        errors.append(f"{key} must be one of the available options")
+                # Simple enum validation
+                elif value not in accepted:
+                    errors.append(f"{key} must be one of: {accepted}")
+            elif isinstance(accepted, dict):
+                # Range validation
+                min_val = accepted.get("min_duration") or accepted.get("min_speed")
+                max_val = accepted.get("max_duration") or accepted.get("max_speed")
+                
+                if min_val is not None and value < min_val:
+                    errors.append(f"{key} must be >= {min_val}")
+                if max_val is not None and value > max_val:
+                    errors.append(f"{key} must be <= {max_val}")
     
     return {"valid": len(errors) == 0, "errors": errors}
 
@@ -248,13 +329,19 @@ def validate_params(
 # Cost Calculation
 # =============================================================================
 
-def calculate_cost(model_id: str, quantity: float = 1.0) -> float:
+def calculate_cost(model_id: str, quantity: float = 1.0, params: Optional[dict] = None) -> float:
     """
     Calculate estimated cost for a generation request.
+    
+    For per_char pricing with billing_unit_size, rounds UP to the nearest billing unit.
+    e.g., billing_unit_size=1000, price_per_unit=$0.1:
+      - 1-1000 chars = 1 unit = $0.10
+      - 1001-2000 chars = 2 units = $0.20
     
     Args:
         model_id: The model identifier
         quantity: Number of units (images, seconds, characters, etc.)
+        params: Optional parameters for tiered pricing
         
     Returns:
         Estimated cost in USD
@@ -263,10 +350,49 @@ def calculate_cost(model_id: str, quantity: float = 1.0) -> float:
     if not model:
         return 0.0
     
-    pricing = model.get("pricing", {})
-    price_per_unit = pricing.get("pricePerUnit", 0.0)
+    pricing = model.get("price", {})
+    unit = pricing.get("unit", "per_request")
     
-    return price_per_unit * quantity
+    # Handle per_char pricing with billing_unit_size
+    if unit == "per_char":
+        billing_unit_size = pricing.get("billing_unit_size", 1)
+        price_per_unit = pricing.get("price_per_unit", 0)
+        
+        # Round UP to nearest billing unit (minimum 1 unit if quantity > 0)
+        billing_units = math.ceil(quantity / billing_unit_size) if quantity > 0 else 0
+        return billing_units * price_per_unit
+    
+    # Simple per-unit pricing (per_second, per_request)
+    if "price_per_unit" in pricing:
+        base_cost = pricing["price_per_unit"] * quantity
+        
+        # Apply multiplier if applicable
+        multiplier_key = pricing.get("multiplier_field_key")
+        if multiplier_key and params:
+            if isinstance(multiplier_key, list):
+                # Check any of the keys
+                if any(params.get(k) for k in multiplier_key):
+                    base_cost *= pricing.get("multiplier_value", 1)
+            elif params.get(multiplier_key):
+                base_cost *= pricing.get("multiplier_value", 1)
+        
+        return base_cost
+    
+    # Tiered pricing
+    if "tier" in pricing:
+        tier_field = pricing.get("tier_field_key", "")
+        tier_value = str(params.get(tier_field, "")) if params else ""
+        tier_prices = pricing["tier"]
+        
+        if tier_value in tier_prices:
+            return tier_prices[tier_value] * quantity
+        
+        # Default to first tier
+        if tier_prices:
+            first_tier = next(iter(tier_prices.values()))
+            return first_tier * quantity
+    
+    return 0.0
 
 
 # =============================================================================
@@ -288,97 +414,26 @@ def get_default_params(model_id: str) -> dict[str, Any]:
         return {}
     
     defaults: dict[str, Any] = {}
-    optional = model.get("parameters", {}).get("optional", {})
     
-    for key, param_def in optional.items():
-        if "default" in param_def:
-            defaults[key] = param_def["default"]
-    
-    # Also include provider config defaults
-    provider_defaults = model.get("providerConfig", {}).get("defaultParams", {})
-    defaults.update(provider_defaults)
+    for param in model.get("parameters", []):
+        if isinstance(param, dict):
+            if "key" in param and "default" in param:
+                defaults[param["key"]] = param["default"]
+            elif "default_values" in param:
+                # Merge default_values dict
+                defaults.update(param["default_values"])
     
     return defaults
 
 
-def apply_parameter_transforms(
-    model_id: str,
-    params: dict[str, Any],
-) -> dict[str, Any]:
+def get_model_config(model_id: str) -> Optional[dict[str, Any]]:
     """
-    Apply parameter transforms defined in the model's provider config.
+    Get the full model configuration for provider use.
     
     Args:
         model_id: The model identifier
-        params: Input parameters
         
     Returns:
-        Transformed parameters
+        Full model configuration dict or None
     """
-    model = get_model(model_id)
-    if not model:
-        return params
-    
-    result = params.copy()
-    transforms = model.get("providerConfig", {}).get("parameterTransforms", {})
-    
-    for key, transform in transforms.items():
-        if key not in result:
-            continue
-        
-        value = result[key]
-        
-        if not isinstance(value, (int, float)):
-            continue
-        
-        # Apply transforms
-        if "min" in transform:
-            value = max(value, transform["min"])
-        if "max" in transform:
-            value = min(value, transform["max"])
-        if "multiply" in transform:
-            value = value * transform["multiply"]
-        
-        result[key] = value
-    
-    return result
-
-
-def map_parameters_to_provider(
-    model_id: str,
-    params: dict[str, Any],
-) -> dict[str, Any]:
-    """
-    Map standard parameter names to provider-specific names.
-    
-    Args:
-        model_id: The model identifier
-        params: Input parameters with standard names
-        
-    Returns:
-        Parameters with provider-specific names
-    """
-    model = get_model(model_id)
-    if not model:
-        return params
-    
-    mapping = model.get("providerConfig", {}).get("parameterMapping", {})
-    if not mapping:
-        return params
-    
-    result: dict[str, Any] = {}
-    
-    for key, value in params.items():
-        mapped_key = mapping.get(key, key)
-        
-        # Handle nested keys like "image_size.width"
-        if "." in mapped_key:
-            parts = mapped_key.split(".")
-            if parts[0] not in result:
-                result[parts[0]] = {}
-            result[parts[0]][parts[1]] = value
-        else:
-            result[mapped_key] = value
-    
-    return result
-
+    return get_model(model_id)

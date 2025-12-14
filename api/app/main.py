@@ -16,7 +16,7 @@ except ImportError:
     InngestIntegration = None
 
 from app.config import get_settings
-from app.routes import generate, jobs
+from app.routes import generate, jobs, billing
 from app.inngest.client import inngest_client
 from app.inngest.functions import all_functions
 
@@ -103,6 +103,7 @@ def create_app() -> FastAPI:
     # Register API routes
     app.include_router(generate.router, prefix="/api/generate", tags=["Generation"])
     app.include_router(jobs.router, prefix="/api/jobs", tags=["Jobs"])
+    app.include_router(billing.router, prefix="/api/billing", tags=["Billing"])
 
     # Register Inngest webhook handler
     inngest.fast_api.serve(

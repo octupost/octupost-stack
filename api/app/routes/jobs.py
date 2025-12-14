@@ -2,7 +2,8 @@
 
 from typing import Optional
 
-from fastapi import APIRouter, HTTPException, Query
+import sentry_sdk
+from fastapi import APIRouter, HTTPException, Header, Query
 
 from app.models.schemas import (
     ErrorResponse,
@@ -10,6 +11,14 @@ from app.models.schemas import (
     JobStatusResponse,
 )
 from app.services.job_store import job_store
+
+
+def _set_user_context(user_id: Optional[str]) -> None:
+    """Set user context in Sentry for error tracking."""
+    if user_id:
+        sentry_sdk.set_user({"id": user_id})
+    else:
+        sentry_sdk.set_user(None)
 
 
 router = APIRouter()
@@ -22,14 +31,23 @@ router = APIRouter()
     summary="Get job status",
     description="Retrieve the current status and result of a generation job",
 )
-async def get_job_status(job_id: str) -> JobStatusResponse:
+async def get_job_status(
+    job_id: str,
+    x_user_id: Optional[str] = Header(None, alias="X-User-Id"),
+) -> JobStatusResponse:
     """
     Get the status of a generation job.
 
     Returns the current status, progress percentage, and result/error
     depending on the job state.
     """
+    _set_user_context(x_user_id)
     job = job_store.get_job(job_id)
+    # #region agent log
+    import json
+    with open("/Users/serhatcamici/dev/octupost-stack/.cursor/debug.log", "a") as f:
+        f.write(json.dumps({"location":"jobs.py:get_job_status","message":"API get_job_status called","data":{"job_id":job_id,"job_found":job is not None,"status":job["status"].value if job else None,"progress":job.get("progress") if job else None,"has_result":job.get("result") is not None if job else None,"job_store_id":id(job_store)},"timestamp":__import__("time").time()*1000,"sessionId":"debug-session","hypothesisId":"A,B"})+"\n")
+    # #endregion
 
     if not job:
         raise HTTPException(
@@ -61,12 +79,16 @@ async def get_job_status(job_id: str) -> JobStatusResponse:
     summary="Cancel a job",
     description="Cancel a pending or processing job",
 )
-async def cancel_job(job_id: str) -> JobStatusResponse:
+async def cancel_job(
+    job_id: str,
+    x_user_id: Optional[str] = Header(None, alias="X-User-Id"),
+) -> JobStatusResponse:
     """
     Cancel a generation job.
 
     Only jobs in 'pending' or 'processing' status can be cancelled.
     """
+    _set_user_context(x_user_id)
     job = job_store.get_job(job_id)
 
     if not job:
@@ -110,12 +132,14 @@ async def cancel_job(job_id: str) -> JobStatusResponse:
 async def list_jobs(
     limit: int = Query(default=50, ge=1, le=100, description="Maximum jobs to return"),
     status: Optional[JobStatus] = Query(default=None, description="Filter by status"),
+    x_user_id: Optional[str] = Header(None, alias="X-User-Id"),
 ) -> list[JobStatusResponse]:
     """
     List recent generation jobs.
 
     Jobs are sorted by creation time (newest first).
     """
+    _set_user_context(x_user_id)
     jobs = job_store.list_jobs(limit=limit, status=status)
 
     return [

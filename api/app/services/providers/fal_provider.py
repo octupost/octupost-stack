@@ -2,15 +2,16 @@
 Fal AI Provider Implementation
 
 This provider handles all Fal AI model integrations using the centralized
-model registry for configuration instead of hardcoded if/elif chains.
+model registry (provider.json) and the transformer for parameter handling.
 """
 
 from typing import Any
 
 import fal_client
 
-from app.registry import Model, Provider, GenerationType
+from app.registry import Model, Provider
 from .base import BaseProvider
+from .transformer import transform_params
 
 
 # Aspect ratio to dimensions mapping
@@ -20,6 +21,11 @@ ASPECT_RATIO_DIMENSIONS: dict[str, tuple[int, int]] = {
     "9:16": (720, 1280),
     "21:9": (1344, 576),
     "4:3": (1024, 768),
+    "3:2": (1152, 768),
+    "2:3": (768, 1152),
+    "5:4": (1024, 820),
+    "4:5": (820, 1024),
+    "3:4": (768, 1024),
 }
 
 
@@ -27,11 +33,16 @@ class FalProvider(BaseProvider):
     """
     Provider implementation for Fal AI.
     
-    Supports:
+    Supports all generation types defined in provider.json:
     - Text-to-image generation
-    - Text-to-video generation
+    - Text-to-video generation  
     - Image-to-video generation
     - Text-to-speech generation
+    - Text-to-audio generation
+    - Text-to-music generation
+    - Video-to-audio generation
+    - Avatar generation
+    - Reference-to-video generation
     """
     
     async def generate(
@@ -43,36 +54,36 @@ class FalProvider(BaseProvider):
         """
         Execute generation using Fal AI.
         
+        This method:
+        1. Transforms parameters based on provider.json definitions
+        2. Handles type conversions (e.g., int to string with "s" suffix)
+        3. Maps parameter names to provider-specific names
+        4. Calls the Fal AI API
+        5. Normalizes the response
+        
         Args:
-            model_id: The model identifier
-            model_config: Model configuration from registry
-            params: Generation parameters
+            model_id: The model identifier (endpoint)
+            model_config: Model configuration from provider.json
+            params: Generation parameters from frontend
             
         Returns:
             Normalized result dictionary
         """
         gen_type = model_config.get("type", "")
-        provider_config = model_config.get("providerConfig", {})
         
-        # Get endpoint
-        endpoint = provider_config.get("endpoint", model_id)
+        # Get endpoint from model config
+        endpoint = model_config.get("endpoint", model_id)
         
-        # Get mappings and transforms
-        param_mapping = provider_config.get("parameterMapping", {})
-        param_transforms = provider_config.get("parameterTransforms", {})
-        default_params = provider_config.get("defaultParams", {})
+        # Transform parameters using the new transformer
+        # This handles:
+        # - Type conversion (int to string, adding "s" suffix, etc.)
+        # - Key renaming (duration -> num_frames)
+        # - Duration multiplication (* 30 for num_frames)
+        # - Merging default_values
+        input_params = transform_params(params, model_config)
         
-        # Build input parameters
-        input_params = self._build_params(
-            params=params,
-            gen_type=gen_type,
-            param_mapping=param_mapping,
-            param_transforms=param_transforms,
-            default_params=default_params,
-        )
-        
-        # Handle GPT Image models which require image_size as string
-        input_params = self._handle_gpt_image_size(input_params, model_id)
+        # Handle special cases
+        input_params = self._handle_special_cases(input_params, model_id, gen_type)
         
         # Call Fal AI API
         result = await fal_client.subscribe_async(
@@ -83,39 +94,32 @@ class FalProvider(BaseProvider):
         # Normalize response
         return self._normalize_response(result, gen_type, params)
     
-    def _build_params(
+    def _handle_special_cases(
         self,
         params: dict[str, Any],
+        model_id: str,
         gen_type: str,
-        param_mapping: dict[str, str],
-        param_transforms: dict[str, dict[str, Any]],
-        default_params: dict[str, Any],
     ) -> dict[str, Any]:
         """
-        Build Fal AI input parameters from standard params.
+        Handle special parameter cases for specific models.
         
         Args:
-            params: Standard input parameters
+            params: Transformed parameters
+            model_id: The model identifier
             gen_type: Generation type
-            param_mapping: Parameter name mapping
-            param_transforms: Parameter value transforms
-            default_params: Default parameters to include
             
         Returns:
-            Fal AI formatted parameters
+            Parameters with special cases handled
         """
-        # Start with defaults
-        result = self.merge_defaults(params, default_params)
+        result = params.copy()
         
-        # Apply transforms (e.g., multiply duration by fps for num_frames)
-        result = self.apply_transforms(result, param_transforms)
+        # Handle GPT Image models - image_size as string
+        if "gpt-image" in model_id:
+            result = self._handle_gpt_image_size(result)
         
-        # Handle aspect ratio to dimensions conversion for images
-        if gen_type == "text-to-image":
+        # Handle aspect ratio to dimensions for some image models
+        if gen_type == "text-to-image" and "aspect_ratio" in result:
             result = self._handle_image_dimensions(result)
-        
-        # Map parameter names
-        result = self.map_parameters(result, param_mapping)
         
         return result
     
@@ -123,24 +127,27 @@ class FalProvider(BaseProvider):
         """
         Handle aspect ratio to dimensions conversion for image generation.
         
+        Some image models need explicit width/height instead of aspect_ratio.
+        
         Args:
             params: Input parameters
             
         Returns:
-            Parameters with dimensions set
+            Parameters with dimensions set if needed
         """
         result = params.copy()
         
-        # If aspect_ratio is provided, convert to width/height
-        aspect_ratio = result.pop("aspect_ratio", None)
+        # If aspect_ratio is provided and no size/width/height, add dimensions
+        aspect_ratio = result.get("aspect_ratio")
         if aspect_ratio and aspect_ratio in ASPECT_RATIO_DIMENSIONS:
-            width, height = ASPECT_RATIO_DIMENSIONS[aspect_ratio]
-            result.setdefault("width", width)
-            result.setdefault("height", height)
+            if "size" not in result and "width" not in result:
+                width, height = ASPECT_RATIO_DIMENSIONS[aspect_ratio]
+                result["width"] = width
+                result["height"] = height
         
         return result
     
-    def _handle_gpt_image_size(self, params: dict[str, Any], model_id: str) -> dict[str, Any]:
+    def _handle_gpt_image_size(self, params: dict[str, Any]) -> dict[str, Any]:
         """
         Convert image_size from object to string for GPT Image models.
         
@@ -149,25 +156,25 @@ class FalProvider(BaseProvider):
         
         Args:
             params: Input parameters (after mapping)
-            model_id: The model identifier
             
         Returns:
             Parameters with corrected image_size format
         """
-        if "gpt-image" not in model_id:
-            return params
-        
         result = params.copy()
-        image_size = result.get("image_size")
         
-        if isinstance(image_size, dict):
-            width = image_size.get("width", 1024)
-            height = image_size.get("height", 1024)
-            size_str = f"{width}x{height}"
-            
-            # GPT Image only accepts specific sizes
+        # Handle size field mapping for GPT Image
+        if "size" in result and isinstance(result["size"], str):
+            # Normalize size values
+            size = result["size"]
             permitted = {"1024x1024", "1536x1024", "1024x1536", "auto"}
-            result["image_size"] = size_str if size_str in permitted else "auto"
+            if size not in permitted:
+                # Try to map aspect ratio to size
+                aspect_to_size = {
+                    "1:1": "1024x1024",
+                    "16:9": "1536x1024",
+                    "9:16": "1024x1536",
+                }
+                result["size"] = aspect_to_size.get(size, "auto")
         
         return result
     
@@ -190,11 +197,15 @@ class FalProvider(BaseProvider):
         """
         if gen_type == "text-to-image":
             return self._normalize_image_response(result, original_params)
-        elif gen_type in ("text-to-video", "image-to-video"):
+        elif gen_type in ("text-to-video", "image-to-video", "reference-to-video", 
+                          "first-last-frame-to-video", "avatar", "retake"):
             return self._normalize_video_response(result, original_params)
-        elif gen_type == "text-to-speech":
+        elif gen_type in ("text-to-speech",):
             return self._normalize_speech_response(result, original_params)
+        elif gen_type in ("text-to-audio", "text-to-music", "video-to-audio"):
+            return self._normalize_audio_response(result, original_params)
         else:
+            # Return raw result for unknown types
             return result
     
     def _normalize_image_response(
@@ -205,13 +216,27 @@ class FalProvider(BaseProvider):
         """Normalize image generation response."""
         images = []
         
-        for img in result.get("images", []):
-            images.append({
-                "url": img.get("url", ""),
-                "width": img.get("width", params.get("width", 1024)),
-                "height": img.get("height", params.get("height", 1024)),
-                "content_type": img.get("content_type", "image/png"),
-            })
+        # Handle different response formats
+        raw_images = result.get("images", [])
+        if not raw_images and "image" in result:
+            raw_images = [result["image"]]
+        
+        for img in raw_images:
+            if isinstance(img, str):
+                # Just a URL
+                images.append({
+                    "url": img,
+                    "width": params.get("width", 1024),
+                    "height": params.get("height", 1024),
+                    "content_type": "image/png",
+                })
+            elif isinstance(img, dict):
+                images.append({
+                    "url": img.get("url", ""),
+                    "width": img.get("width", params.get("width", 1024)),
+                    "height": img.get("height", params.get("height", 1024)),
+                    "content_type": img.get("content_type", "image/png"),
+                })
         
         return {
             "images": images,
@@ -226,6 +251,10 @@ class FalProvider(BaseProvider):
     ) -> dict[str, Any]:
         """Normalize video generation response."""
         video_data = result.get("video", {})
+        
+        # Handle different response formats
+        if not video_data and "url" in result:
+            video_data = {"url": result["url"]}
         
         # Get dimensions from aspect ratio
         aspect_ratio = params.get("aspect_ratio", "16:9")
@@ -255,6 +284,13 @@ class FalProvider(BaseProvider):
         """Normalize speech generation response."""
         audio_data = result.get("audio", {})
         
+        # Handle different response formats
+        if not audio_data:
+            audio_data = {
+                "url": result.get("audio_url", result.get("url", "")),
+                "duration": result.get("duration", 0.0),
+            }
+        
         audio = {
             "url": audio_data.get("url", result.get("audio_url", "")),
             "duration": audio_data.get("duration", 0.0),
@@ -264,7 +300,33 @@ class FalProvider(BaseProvider):
         return {
             "audio": audio,
             "text": params.get("text", params.get("prompt", "")),
-            "voice": params.get("voice", ""),
+            "voice": params.get("voice", params.get("voice_id", "")),
+        }
+    
+    def _normalize_audio_response(
+        self,
+        result: dict[str, Any],
+        params: dict[str, Any],
+    ) -> dict[str, Any]:
+        """Normalize audio/music generation response."""
+        audio_data = result.get("audio", {})
+        
+        # Handle different response formats
+        if not audio_data:
+            audio_data = {
+                "url": result.get("audio_url", result.get("url", "")),
+                "duration": result.get("duration", params.get("duration", 0.0)),
+            }
+        
+        audio = {
+            "url": audio_data.get("url", result.get("audio_url", "")),
+            "duration": audio_data.get("duration", params.get("duration", 0.0)),
+            "content_type": audio_data.get("content_type", "audio/wav"),
+        }
+        
+        return {
+            "audio": audio,
+            "prompt": params.get("prompt", ""),
         }
 
 
@@ -276,7 +338,18 @@ fal_provider = FalProvider(provider_config={
     "authMethod": "api-key",
     "authEnvVar": "FAL_KEY",
     "baseUrl": None,
-    "capabilities": ["text-to-image", "text-to-video", "image-to-video", "text-to-speech"],
+    "capabilities": [
+        "text-to-image", 
+        "text-to-video", 
+        "image-to-video", 
+        "text-to-speech",
+        "text-to-audio",
+        "text-to-music",
+        "video-to-audio",
+        "avatar",
+        "reference-to-video",
+        "first-last-frame-to-video",
+        "retake",
+    ],
     "responseMapping": {},
 })
-

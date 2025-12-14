@@ -5,6 +5,7 @@ import sentry_sdk
 from supabase import create_client, Client
 
 from app.config import get_settings
+from app.services.asset_naming import generate_asset_name
 
 
 class SupabaseService:
@@ -78,8 +79,17 @@ class SupabaseService:
         # Resolve workplace: prefer provided; otherwise fall back to personal workspace for the owner
         resolved_workplace_id = workplace_id or self.get_personal_workplace_id(owner_id)
 
+        # Generate a user-friendly name from the prompt (for AI-generated assets)
+        prompt = (generation_params or {}).get("prompt")
+        asset_name = generate_asset_name(
+            asset_type=asset_type,
+            source=source,
+            prompt=prompt,
+        )
+
         data = {
             "owner_id": owner_id,
+            "name": asset_name,
             "type": asset_type,
             "source": source,
             "generation_status": "in_queue",

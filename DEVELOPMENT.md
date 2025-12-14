@@ -79,6 +79,9 @@ cd api && source venv/bin/activate && uvicorn app.main:app --reload --port 8000
 cd api && source venv/bin/activate && python agent_os.py
 ```
 
+
+npx inngest-cli@latest dev
+
 ---
 
 ## Cursor MCP Servers
@@ -120,3 +123,11 @@ Edit `~/.cursor/mcp.json` and add your server configuration:
 
 After editing, restart Cursor for changes to take effect.
 
+# Install Stripe CLI
+brew install stripe/stripe-cli/stripe
+
+# Login
+stripe login
+
+# Forward webhooks to your local server
+stripe listen --forward-to localhost:8000/api/billing/webhook

@@ -8,9 +8,13 @@ interface.
 
 from .base import BaseProvider
 from .fal_provider import FalProvider
+from .transformer import transform_params, merge_defaults, validate_and_transform
 
 __all__ = [
     "BaseProvider",
     "FalProvider",
+    "transform_params",
+    "merge_defaults",
+    "validate_and_transform",
 ]
 

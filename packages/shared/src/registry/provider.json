@@ -95,7 +95,8 @@
         }
       }
     ],
-    "parent_type": "image-to-video"
+    "parent_type": "image-to-video",
+    "billing_strategy": "direct"
   },
   {
     "fps": null,
@@ -173,7 +174,8 @@
         "accepted_values": ["happy", "sad", "angry", "fearful", "disgusted", "surprised", "neutral"]
       }
     ],
-    "parent_type": "text-to-speech"
+    "parent_type": "text-to-speech",
+    "billing_strategy": "direct"
   },
   {
     "fps": 25,
@@ -256,7 +258,8 @@
         "mapping_type": "boolean"
       }
     ],
-    "parent_type": "text-to-video"
+    "parent_type": "text-to-video",
+    "billing_strategy": "direct"
   },
   {
     "fps": 30,
@@ -345,7 +348,8 @@
         }
       }
     ],
-    "parent_type": "text-to-video"
+    "parent_type": "text-to-video",
+    "billing_strategy": "direct"
   },
   {
     "fps": null,
@@ -393,7 +397,8 @@
         "mapping_type": "string"
       }
     ],
-    "parent_type": "text-to-audio"
+    "parent_type": "text-to-audio",
+    "billing_strategy": "direct"
   },
   {
     "fps": null,
@@ -445,7 +450,8 @@
         "mapping_type": "boolean"
       }
     ],
-    "parent_type": "video-to-audio"
+    "parent_type": "video-to-audio",
+    "billing_strategy": "direct"
   },
   {
     "fps": 24,
@@ -528,7 +534,8 @@
         }
       }
     ],
-    "parent_type": "text-to-video"
+    "parent_type": "text-to-video",
+    "billing_strategy": "direct"
   },
   {
     "fps": 30,
@@ -564,21 +571,149 @@
         "required": true,
         "mapping_type": "string",
         "accepted_values": [
-          "Lara (Masterclass)",
-          "Maria (Masterclass)",
-          "Sienna (Masterclass)",
-          "Jasmine (Masterclass)",
-          "Amara (Masterclass)",
-          "Tyler (Masterclass)",
-          "Jayse (Masterclass)",
-          "Paul (Masterclass)",
-          "Viva (Masterclass)",
-          "Alex (Masterclass)",
-          "Byron (Masterclass)",
-          "Calista (Masterclass)",
-          "Fabien (Masterclass)",
-          "Laurent (UGC)",
-          "Noemie car (UGC)"
+          {
+            "name": "Mia outdoor (UGC)",
+            "image_url": ""
+          },
+          {
+            "name": "Lara (Masterclass)",
+            "image_url": "https://argildotai.s3-accelerate.amazonaws.com/video/00000000-0000-0000-0000-000000000000/models/v2/1fe6292b-9b78-4908-a272-b1f1fe468317/serving-dataset/placeholders/frame-000001.jpg"
+          },
+          {
+            "name": "Ines (UGC)",
+            "image_url": ""
+          },
+          {
+            "name": "Maria (Masterclass)",
+            "image_url": "https://argildotai.s3-accelerate.amazonaws.com/video/00000000-0000-0000-0000-000000000000/models/v2/240329c7-3b59-41f0-ba63-a11454df0c52/serving-dataset/placeholders/frame-000120.jpg"
+          },
+          {
+            "name": "Emma (UGC)",
+            "image_url": ""
+          },
+          {
+            "name": "Sienna (Masterclass)",
+            "image_url": "https://argildotai.s3-accelerate.amazonaws.com/video/00000000-0000-0000-0000-000000000000/models/v2/63e92ef4-3295-4a11-9c71-e6088835e4fc/serving-dataset/placeholders/frame-000061.jpg"
+          },
+          {
+            "name": "Elena (UGC)",
+            "image_url": ""
+          },
+          {
+            "name": "Jasmine (Masterclass)",
+            "image_url": "https://argildotai.s3-accelerate.amazonaws.com/video/00000000-0000-0000-0000-000000000000/models/v2/5788ef30-7e2c-46e3-b39c-73f45d0ed842/serving-dataset/placeholders/frame-000057.jpg"
+          },
+          {
+            "name": "Amara (Masterclass)",
+            "image_url": "https://argildotai.s3-accelerate.amazonaws.com/video/00000000-0000-0000-0000-000000000000/models/v2/fe10a326-b246-4181-b150-7decc0ab0fa7/serving-dataset/placeholders/frame-000120.jpg"
+          },
+          {
+            "name": "Ryan podcast (UGC)",
+            "image_url": ""
+          },
+          {
+            "name": "Tyler (Masterclass)",
+            "image_url": "https://argildotai.s3-accelerate.amazonaws.com/video/00000000-0000-0000-0000-000000000000/models/v2/69325563-48d1-447a-b97a-1fe5218e0e72/serving-dataset/placeholders/frame-000120.jpg"
+          },
+          {
+            "name": "Jayse (Masterclass)",
+            "image_url": "https://argildotai.s3-accelerate.amazonaws.com/video/00000000-0000-0000-0000-000000000000/models/v2/f1b31909-97a0-4765-8015-b8045ffd33e3/serving-dataset/placeholders/frame-000030.jpg"
+          },
+          {
+            "name": "Paul (Masterclass)",
+            "image_url": "https://argildotai.s3-accelerate.amazonaws.com/video/00000000-0000-0000-0000-000000000000/models/v2/4d3a8e4f-fe81-4b7c-89e4-6bdfb8c6bf9d/serving-dataset/placeholders/frame-000120.jpg"
+          },
+          {
+            "name": "Matteo (UGC)",
+            "image_url": ""
+          },
+          {
+            "name": "Daniel car (UGC)",
+            "image_url": ""
+          },
+          {
+            "name": "Dario (Masterclass)",
+            "image_url": ""
+          },
+          {
+            "name": "Viva (Masterclass)",
+            "image_url": "https://argildotai.s3-accelerate.amazonaws.com/video/00000000-0000-0000-0000-000000000000/models/v2/96db139f-5a40-4824-ac9f-0e98952e07c7/serving-dataset/placeholders/frame-000120.jpg"
+          },
+          {
+            "name": "Chen (Masterclass)",
+            "image_url": ""
+          },
+          {
+            "name": "Alex (Masterclass)",
+            "image_url": "https://argildotai.s3-accelerate.amazonaws.com/video/00000000-0000-0000-0000-000000000000/models/v2/d2629d75-36a2-4c1e-8ebe-f0b448e114aa/serving-dataset/placeholders/frame-000030.jpg"
+          },
+          {
+            "name": "Vanessa (UGC)",
+            "image_url": ""
+          },
+          {
+            "name": "Laurent (UGC)",
+            "image_url": "https://argildotai.s3-accelerate.amazonaws.com/video/00000000-0000-0000-0000-000000000000/models/v2/f556bced-404a-41f8-ada9-6c423bd87f34/serving-dataset/placeholders/frame-000120.jpg"
+          },
+          {
+            "name": "Noemie car (UGC)",
+            "image_url": "https://argildotai.s3-accelerate.amazonaws.com/video/00000000-0000-0000-0000-000000000000/models/v2/eecb0a26-bebd-43cb-a5fa-c7da82064561/serving-dataset/placeholders/frame-000120.jpg"
+          },
+          {
+            "name": "Brandon (UGC)",
+            "image_url": ""
+          },
+          {
+            "name": "Byron (Masterclass)",
+            "image_url": "https://argildotai.s3-accelerate.amazonaws.com/video/00000000-0000-0000-0000-000000000000/models/v2/4603b780-89a0-4147-9b72-8c961a974c9e/serving-dataset/placeholders/frame-000120.jpg"
+          },
+          {
+            "name": "Calista (Masterclass)",
+            "image_url": "https://argildotai.s3-accelerate.amazonaws.com/video/00000000-0000-0000-0000-000000000000/models/v2/46ce22c2-641a-4e33-9c48-2f1d4d5d2734/serving-dataset/placeholders/frame-000321.jpg"
+          },
+          {
+            "name": "Milo (Masterclass)",
+            "image_url": ""
+          },
+          {
+            "name": "Fabien (Masterclass)",
+            "image_url": "https://argildotai.s3-accelerate.amazonaws.com/video/00000000-0000-0000-0000-000000000000/models/v2/257286e7-eb4e-4f50-bea0-e292d719e4aa/serving-dataset/placeholders/frame-000120.jpg"
+          },
+          {
+            "name": "Rose (UGC)",
+            "image_url": ""
+          }
+        ]
+      },
+      {
+        "key": "voice",
+        "type": "string",
+        "notes": "",
+        "default": "",
+        "mapping": "voice",
+        "required": true,
+        "mapping_type": "string",
+        "accepted_values": [
+          "Rachel",
+          "Clyde",
+          "Roger",
+          "Sarah",
+          "Laura",
+          "Thomas",
+          "Charlie",
+          "George",
+          "Callum",
+          "River",
+          "Harry",
+          "Liam",
+          "Alice",
+          "Matilda",
+          "Will",
+          "Jessica",
+          "Lilly",
+          "Bill",
+          "Oxley",
+          "Luna"
         ]
       },
       {
@@ -591,7 +726,8 @@
         "mapping_type": "boolean"
       }
     ],
-    "parent_type": "avatar"
+    "parent_type": "avatar",
+    "billing_strategy": "reservation"
   },
   {
     "fps": 30,
@@ -680,7 +816,8 @@
         }
       }
     ],
-    "parent_type": "text-to-video"
+    "parent_type": "text-to-video",
+    "billing_strategy": "direct"
   },
   {
     "fps": null,
@@ -728,7 +865,8 @@
         }
       }
     ],
-    "parent_type": "video-to-audio"
+    "parent_type": "video-to-audio",
+    "billing_strategy": "direct"
   },
   {
     "fps": null,
@@ -776,7 +914,8 @@
         "mapping_type": "string"
       }
     ],
-    "parent_type": "text-to-music"
+    "parent_type": "text-to-music",
+    "billing_strategy": "direct"
   },
   {
     "fps": null,
@@ -831,7 +970,8 @@
         "accepted_values": ["auto", "1024x1024", "1024x1536", "1536x1024"]
       }
     ],
-    "parent_type": "text-to-image"
+    "parent_type": "text-to-image",
+    "billing_strategy": "direct"
   },
   {
     "fps": null,
@@ -879,7 +1019,8 @@
         }
       }
     ],
-    "parent_type": "video-to-audio"
+    "parent_type": "video-to-audio",
+    "billing_strategy": "direct"
   },
   {
     "fps": 24,
@@ -951,7 +1092,8 @@
         "mapping_type": "boolean"
       }
     ],
-    "parent_type": "text-to-video"
+    "parent_type": "text-to-video",
+    "billing_strategy": "direct"
   },
   {
     "fps": 24,
@@ -1030,7 +1172,8 @@
         "mapping_type": "boolean"
       }
     ],
-    "parent_type": "image-to-video"
+    "parent_type": "image-to-video",
+    "billing_strategy": "direct"
   },
   {
     "fps": 24,
@@ -1113,7 +1256,8 @@
         }
       }
     ],
-    "parent_type": "image-to-video"
+    "parent_type": "image-to-video",
+    "billing_strategy": "direct"
   },
   {
     "fps": 30,
@@ -1181,7 +1325,8 @@
         }
       }
     ],
-    "parent_type": "text-to-video"
+    "parent_type": "text-to-video",
+    "billing_strategy": "direct"
   },
   {
     "fps": 25,
@@ -1264,7 +1409,8 @@
         "mapping_type": "boolean"
       }
     ],
-    "parent_type": "text-to-video"
+    "parent_type": "text-to-video",
+    "billing_strategy": "direct"
   },
   {
     "fps": 25,
@@ -1356,7 +1502,8 @@
         "mapping_type": "boolean"
       }
     ],
-    "parent_type": "image-to-video"
+    "parent_type": "image-to-video",
+    "billing_strategy": "direct"
   },
   {
     "fps": 24,
@@ -1469,7 +1616,8 @@
         "mapping_type": "image"
       }
     ],
-    "parent_type": "image-to-video"
+    "parent_type": "image-to-video",
+    "billing_strategy": "direct"
   },
   {
     "fps": 30,
@@ -1503,7 +1651,8 @@
         "mapping_type": "string"
       }
     ],
-    "parent_type": "retake"
+    "parent_type": "retake",
+    "billing_strategy": "direct"
   },
   {
     "fps": null,
@@ -1542,7 +1691,8 @@
         }
       }
     ],
-    "parent_type": "text-to-music"
+    "parent_type": "text-to-music",
+    "billing_strategy": "direct"
   },
   {
     "fps": 24,
@@ -1653,7 +1803,8 @@
         }
       }
     ],
-    "parent_type": "image-to-video"
+    "parent_type": "image-to-video",
+    "billing_strategy": "direct"
   },
   {
     "fps": 48,
@@ -1697,7 +1848,8 @@
         "mapping_type": "string"
       }
     ],
-    "parent_type": "avatar"
+    "parent_type": "avatar",
+    "billing_strategy": "direct"
   },
   {
     "fps": 30,
@@ -1765,7 +1917,8 @@
         }
       }
     ],
-    "parent_type": "image-to-video"
+    "parent_type": "image-to-video",
+    "billing_strategy": "direct"
   },
   {
     "fps": null,
@@ -1787,7 +1940,8 @@
         "default": "",
         "mapping": "text",
         "required": true,
-        "mapping_type": "string"
+        "mapping_type": "string",
+        "max_length": 500
       },
       {
         "key": "voice",
@@ -1861,7 +2015,8 @@
         }
       }
     ],
-    "parent_type": "text-to-speech"
+    "parent_type": "text-to-speech",
+    "billing_strategy": "direct"
   },
   {
     "fps": 30,
@@ -1925,7 +2080,8 @@
         }
       }
     ],
-    "parent_type": "image-to-video"
+    "parent_type": "image-to-video",
+    "billing_strategy": "direct"
   },
   {
     "fps": 24,
@@ -2004,7 +2160,8 @@
         "mapping_type": "boolean"
       }
     ],
-    "parent_type": "text-to-video"
+    "parent_type": "text-to-video",
+    "billing_strategy": "direct"
   },
   {
     "fps": 24,
@@ -2085,7 +2242,8 @@
         "mapping_type": "boolean"
       }
     ],
-    "parent_type": "image-to-video"
+    "parent_type": "image-to-video",
+    "billing_strategy": "direct"
   },
   {
     "fps": 24,
@@ -2144,7 +2302,8 @@
         "mapping_type": "string"
       }
     ],
-    "parent_type": "retake"
+    "parent_type": "retake",
+    "billing_strategy": "direct"
   },
   {
     "fps": null,
@@ -2222,7 +2381,8 @@
         "accepted_values": ["happy", "sad", "angry", "fearful", "disgusted", "surprised", "neutral"]
       }
     ],
-    "parent_type": "text-to-speech"
+    "parent_type": "text-to-speech",
+    "billing_strategy": "direct"
   },
   {
     "fps": 25,
@@ -2314,7 +2474,8 @@
         "mapping_type": "boolean"
       }
     ],
-    "parent_type": "image-to-video"
+    "parent_type": "image-to-video",
+    "billing_strategy": "direct"
   },
   {
     "fps": 30,
@@ -2412,7 +2573,8 @@
         }
       }
     ],
-    "parent_type": "image-to-video"
+    "parent_type": "image-to-video",
+    "billing_strategy": "direct"
   },
   {
     "fps": 24,
@@ -2514,7 +2676,8 @@
         }
       }
     ],
-    "parent_type": "image-to-video"
+    "parent_type": "image-to-video",
+    "billing_strategy": "direct"
   },
   {
     "fps": 24,
@@ -2582,7 +2745,8 @@
         "mapping_type": "boolean"
       }
     ],
-    "parent_type": "text-to-video"
+    "parent_type": "text-to-video",
+    "billing_strategy": "direct"
   },
   {
     "fps": null,
@@ -2621,7 +2785,8 @@
         }
       }
     ],
-    "parent_type": "text-to-audio"
+    "parent_type": "text-to-audio",
+    "billing_strategy": "direct"
   },
   {
     "fps": 24,
@@ -2704,7 +2869,8 @@
         }
       }
     ],
-    "parent_type": "text-to-video"
+    "parent_type": "text-to-video",
+    "billing_strategy": "direct"
   },
   {
     "fps": null,
@@ -2754,7 +2920,8 @@
         "accepted_values": ["21:9", "16:9", "3:2", "4:3", "5:4", "1:1", "4:5", "3:4", "2:3", "9:16"]
       }
     ],
-    "parent_type": "text-to-image"
+    "parent_type": "text-to-image",
+    "billing_strategy": "direct"
   },
   {
     "fps": 24,
@@ -2835,7 +3002,8 @@
         "mapping_type": "boolean"
       }
     ],
-    "parent_type": "image-to-video"
+    "parent_type": "image-to-video",
+    "billing_strategy": "direct"
   },
   {
     "fps": null,
@@ -2860,7 +3028,8 @@
         "mapping_type": "string"
       }
     ],
-    "parent_type": "text-to-music"
+    "parent_type": "text-to-music",
+    "billing_strategy": "direct"
   },
   {
     "fps": 24,
@@ -2937,7 +3106,8 @@
         "mapping_type": "boolean"
       }
     ],
-    "parent_type": "image-to-video"
+    "parent_type": "image-to-video",
+    "billing_strategy": "direct"
   },
   {
     "fps": 24,
@@ -3020,7 +3190,8 @@
         }
       }
     ],
-    "parent_type": "image-to-video"
+    "parent_type": "image-to-video",
+    "billing_strategy": "direct"
   },
   {
     "fps": 48,
@@ -3064,7 +3235,8 @@
         "mapping_type": "string"
       }
     ],
-    "parent_type": "avatar"
+    "parent_type": "avatar",
+    "billing_strategy": "direct"
   },
   {
     "fps": 30,
@@ -3128,7 +3300,8 @@
         }
       }
     ],
-    "parent_type": "text-to-video"
+    "parent_type": "text-to-video",
+    "billing_strategy": "direct"
   },
   {
     "fps": 24,
@@ -3230,7 +3403,8 @@
         }
       }
     ],
-    "parent_type": "image-to-video"
+    "parent_type": "image-to-video",
+    "billing_strategy": "direct"
   },
   {
     "fps": 24,
@@ -3307,6 +3481,7 @@
         "mapping_type": "boolean"
       }
     ],
-    "parent_type": "image-to-video"
+    "parent_type": "image-to-video",
+    "billing_strategy": "direct"
   }
 ]

@@ -1,24 +1,25 @@
 """
 AI Model Registry
 
-Centralized configuration for all AI models. This module reads from the
-shared JSON registry that is also used by the frontend.
+Centralized configuration for all AI models. This module reads from
+provider.json in the shared package.
 
 Example:
     from app.registry import get_model, get_models_by_type, validate_params
 
     # Get a specific model
-    model = get_model("fal-ai/flux/schnell")
+    model = get_model("fal-ai/veo3.1")
 
-    # Get all image models
-    image_models = get_models_by_type("text-to-image")
+    # Get all video models
+    video_models = get_models_by_type("text-to-video")
 
-    # Validate parameters
-    result = validate_params("fal-ai/flux/schnell", {"prompt": "A cat"})
+    # Validate parameters dynamically
+    result = validate_params("fal-ai/veo3.1", {"prompt": "A cat", "duration": 4})
 """
 
 from .reader import (
     get_model,
+    get_model_config,
     get_all_models,
     get_enabled_models,
     get_models_by_type,
@@ -32,30 +33,39 @@ from .reader import (
     is_valid_model,
     validate_params,
     calculate_cost,
+    get_default_params,
+    reload_registry,
 )
 
 from .types import (
     GenerationType,
     VideoGenerationMode,
+    TierType,
     ProviderType,
     AuthMethod,
     PricingUnit,
     Provider,
     ModelPricing,
-    DurationRange,
-    ModelCapabilities,
+    AcceptedValuesRange,
+    AcceptedValues,
     ParameterDefinition,
-    ModelParameters,
-    ParameterTransform,
-    ProviderConfig,
+    DefaultValuesDefinition,
+    ParameterEntry,
     Model,
     GenerationModeDefinition,
     ValidationResult,
+    # Legacy types for backward compatibility
+    DurationRange,
+    ModelCapabilities,
+    ParameterTransform,
+    ProviderConfig,
+    ModelParameters,
 )
 
 __all__ = [
     # Reader functions
     "get_model",
+    "get_model_config",
     "get_all_models",
     "get_enabled_models",
     "get_models_by_type",
@@ -69,22 +79,29 @@ __all__ = [
     "is_valid_model",
     "validate_params",
     "calculate_cost",
+    "get_default_params",
+    "reload_registry",
     # Types
     "GenerationType",
     "VideoGenerationMode",
+    "TierType",
     "ProviderType",
     "AuthMethod",
     "PricingUnit",
     "Provider",
     "ModelPricing",
-    "DurationRange",
-    "ModelCapabilities",
+    "AcceptedValuesRange",
+    "AcceptedValues",
     "ParameterDefinition",
-    "ModelParameters",
-    "ParameterTransform",
-    "ProviderConfig",
+    "DefaultValuesDefinition",
+    "ParameterEntry",
     "Model",
     "GenerationModeDefinition",
     "ValidationResult",
+    # Legacy types
+    "DurationRange",
+    "ModelCapabilities",
+    "ParameterTransform",
+    "ProviderConfig",
+    "ModelParameters",
 ]
-

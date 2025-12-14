@@ -32,6 +32,9 @@ sqlalchemy>=2.0.0
 # Sentry for error tracking
 sentry-sdk[fastapi]>=2.0.0
 
+# Stripe for billing
+stripe>=14.0.0
+
 # Agno AI agents
 agno[openrouter]
 openai

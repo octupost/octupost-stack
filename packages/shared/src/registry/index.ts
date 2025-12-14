@@ -23,6 +23,8 @@ import {
   isDurationAcceptedValues,
   isSpeedAcceptedValues,
   isArrayAcceptedValues,
+  isAvatarAcceptedValues,
+  type AvatarAcceptedValue,
 } from "./types"
 
 // =============================================================================
@@ -204,12 +206,96 @@ export function getVoiceEmotions(provider: Provider): string[] {
 }
 
 /**
- * Get avatar options from a provider.
+ * Get avatar options from a provider (just names for backward compatibility).
  */
 export function getAvatars(provider: Provider): string[] {
   const param = getParameter(provider, "avatar")
   if (!param?.accepted_values) return []
+  
+  // Handle new object format with metadata
+  if (isAvatarAcceptedValues(param.accepted_values)) {
+    return param.accepted_values.map(a => a.name)
+  }
+  
+  // Handle legacy string array format
   return getAcceptedValuesArray(param.accepted_values) as string[]
+}
+
+/** Raw avatar data as it comes from JSON (snake_case) */
+interface RawAvatarData {
+  name: string
+  image_url?: string
+}
+
+/**
+ * Get avatar options with metadata (name and image URL).
+ */
+export function getAvatarsWithMeta(provider: Provider): AvatarAcceptedValue[] {
+  const param = getParameter(provider, "avatar")
+  if (!param?.accepted_values) return []
+  
+  // Handle new object format - transform snake_case to camelCase
+  if (isAvatarAcceptedValues(param.accepted_values)) {
+    return (param.accepted_values as unknown as RawAvatarData[]).map(avatar => ({
+      name: avatar.name,
+      imageUrl: avatar.image_url || "",
+    }))
+  }
+  
+  // Handle legacy string array - convert to objects without images
+  if (isArrayAcceptedValues(param.accepted_values)) {
+    return (param.accepted_values as string[]).map(name => ({ 
+      name, 
+      imageUrl: "",
+    }))
+  }
+  
+  return []
+}
+
+/**
+ * Get image URL for an avatar by name.
+ */
+export function getAvatarImageUrl(provider: Provider, avatarName: string): string | undefined {
+  const avatars = getAvatarsWithMeta(provider)
+  return avatars.find(a => a.name === avatarName)?.imageUrl || undefined
+}
+
+/**
+ * Get max text length for a provider's text parameter.
+ * Returns null if provider doesn't have a text parameter with max_length.
+ */
+export function getTextMaxLength(provider: Provider): number | null {
+  const param = getParameter(provider, "text")
+  return param?.max_length ?? null
+}
+
+/**
+ * Check if provider uses text prompt input (e.g., Argil avatars).
+ * This is different from audio_url providers (e.g., Kling avatars).
+ */
+export function usesPromptInput(provider: Provider): boolean {
+  const hasPrompt = hasParameter(provider, "prompt")
+  const hasAudioUrl = hasParameter(provider, "audio_url")
+  const hasImageUrl = hasParameter(provider, "image_url")
+  
+  // Provider uses prompt input if it has prompt but NOT audio_url
+  // (Kling has both prompt and audio_url, but audio_url is the main input)
+  return hasPrompt && !hasAudioUrl && !hasImageUrl
+}
+
+/**
+ * Check if provider uses audio URL input (e.g., Kling avatars).
+ */
+export function usesAudioUrlInput(provider: Provider): boolean {
+  return hasParameter(provider, "audio_url")
+}
+
+/**
+ * Check if provider has transparent background option.
+ */
+export function hasTransparentBackgroundOption(provider: Provider): boolean {
+  return hasParameter(provider, "transparent_background")
 }
 
 /**
@@ -326,5 +412,6 @@ export function supportsVideoMode(provider: Provider, mode: VideoGenerationMode)
 export function getProvidersForVideoMode(mode: VideoGenerationMode): Provider[] {
   return getActiveProviders().filter((p) => supportsVideoMode(p, mode))
 }
+
 
 

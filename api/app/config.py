@@ -112,6 +112,11 @@ class Settings(BaseSettings):
     sentry_dsn: str = ""
     environment: str = "development"
 
+    # Stripe Configuration
+    stripe_secret_key: str = ""
+    stripe_webhook_secret: str = ""
+    stripe_publishable_key: str = ""  # For reference (mainly used in frontend)
+
     @property
     def cors_origins_list(self) -> list[str]:
         """Parse CORS origins from comma-separated string."""

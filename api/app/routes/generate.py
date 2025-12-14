@@ -3,6 +3,7 @@
 from typing import Any, Optional
 
 import inngest
+import sentry_sdk
 from fastapi import APIRouter, HTTPException, Header
 from pydantic import BaseModel, Field
 
@@ -12,66 +13,98 @@ from app.models.schemas import (
     JobResponse,
     JobStatus,
 )
-from app.registry import get_model, is_valid_model, validate_params, GenerationType
+from app.registry import get_model, is_valid_model, validate_params, calculate_cost, GenerationType
 from app.services.job_store import job_store
 from app.services.supabase_client import supabase_service
+from app.services.credit_service import (
+    credit_service,
+    estimate_duration_from_text,
+    get_text_from_params,
+    BUFFER_MULTIPLIER,
+)
+
+
+# Credit conversion: 1 USD = 100 credits
+USD_TO_CREDITS = 100
 
 
 router = APIRouter()
 
 
 # =============================================================================
-# Request Models (simplified - validation happens via registry)
+# Request Models (flexible - validation happens via registry)
 # =============================================================================
 
 class GenerationRequest(BaseModel):
     """Unified generation request model."""
-    model: str = Field(..., description="Model identifier from registry")
+    model: str = Field(..., description="Model endpoint from provider.json")
     params: dict[str, Any] = Field(default_factory=dict, description="Generation parameters")
 
 
-class TextToImageRequest(BaseModel):
-    """Text-to-image generation request."""
-    model: str = Field(default="fal-ai/gpt-image-1-mini", description="Model identifier")
-    prompt: str = Field(..., min_length=1, max_length=2000)
-    width: int = Field(default=1024, ge=256, le=2048)
-    height: int = Field(default=1024, ge=256, le=2048)
-    aspect_ratio: Optional[str] = Field(default=None)
-    num_images: int = Field(default=1, ge=1, le=4)
-    negative_prompt: Optional[str] = Field(default=None, max_length=1000)
-    seed: Optional[int] = Field(default=None, ge=0)
-    guidance_scale: float = Field(default=7.5, ge=1.0, le=20.0)
-    num_inference_steps: int = Field(default=4, ge=1, le=50)
+class FlexibleVideoRequest(BaseModel):
+    """
+    Flexible video generation request.
+    
+    Accepts any parameters - validation happens dynamically based on the model.
+    """
+    model: str = Field(..., description="Model endpoint from provider.json")
+    prompt: str = Field(..., min_length=1, max_length=5000, description="Generation prompt")
+    duration: Optional[int] = Field(default=None, description="Video duration in seconds")
+    aspect_ratio: Optional[str] = Field(default=None, description="Video aspect ratio")
+    resolution: Optional[str] = Field(default=None, description="Video resolution")
+    negative_prompt: Optional[str] = Field(default=None, description="Negative prompt")
+    enhance_prompt: Optional[bool] = Field(default=None, description="Enable prompt enhancement")
+    enable_audio: Optional[bool] = Field(default=None, description="Enable audio generation")
+    fps: Optional[int] = Field(default=None, description="Frames per second")
+    seed: Optional[int] = Field(default=None, ge=0, description="Random seed")
+    
+    # Allow any additional parameters
+    class Config:
+        extra = "allow"
 
 
-class TextToVideoRequest(BaseModel):
-    """Text-to-video generation request."""
-    model: str = Field(default="fal-ai/infinity-star/text-to-video", description="Model identifier")
-    prompt: str = Field(..., min_length=1, max_length=2000)
-    aspect_ratio: str = Field(default="16:9")
-    duration: int = Field(default=4, ge=2, le=16)
-    negative_prompt: Optional[str] = Field(default=None, max_length=1000)
-    seed: Optional[int] = Field(default=None, ge=0)
-    guidance_scale: float = Field(default=5.0, ge=1.0, le=20.0)
-    num_inference_steps: int = Field(default=30, ge=10, le=50)
-
-
-class ImageToVideoRequest(BaseModel):
-    """Image-to-video generation request."""
-    model: str = Field(default="fal-ai/minimax-video/image-to-video", description="Model identifier")
+class FlexibleImageToVideoRequest(BaseModel):
+    """
+    Flexible image-to-video generation request.
+    """
+    model: str = Field(..., description="Model endpoint from provider.json")
     image_url: str = Field(..., description="URL of the source image")
-    prompt: str = Field(..., min_length=1, max_length=2000)
-    duration: int = Field(default=4, ge=2, le=10)
-    negative_prompt: Optional[str] = Field(default=None, max_length=1000)
-    seed: Optional[int] = Field(default=None, ge=0)
+    prompt: str = Field(..., min_length=1, max_length=5000, description="Motion prompt")
+    duration: Optional[int] = Field(default=None, description="Video duration in seconds")
+    aspect_ratio: Optional[str] = Field(default=None, description="Video aspect ratio")
+    resolution: Optional[str] = Field(default=None, description="Video resolution")
+    negative_prompt: Optional[str] = Field(default=None, description="Negative prompt")
+    enhance_prompt: Optional[bool] = Field(default=None, description="Enable prompt enhancement")
+    enable_audio: Optional[bool] = Field(default=None, description="Enable audio generation")
+    seed: Optional[int] = Field(default=None, ge=0, description="Random seed")
+    
+    class Config:
+        extra = "allow"
 
 
-class TextToSpeechRequest(BaseModel):
-    """Text-to-speech generation request."""
-    model: str = Field(default="fal-ai/kokoro", description="Model identifier")
-    text: str = Field(..., min_length=1, max_length=5000)
-    voice: str = Field(default="af_bella")
-    speed: float = Field(default=1.0, ge=0.5, le=2.0)
+class FlexibleImageRequest(BaseModel):
+    """Flexible image generation request."""
+    model: str = Field(default="fal-ai/gpt-image-1-mini", description="Model endpoint")
+    prompt: str = Field(..., min_length=1, max_length=5000, description="Generation prompt")
+    aspect_ratio: Optional[str] = Field(default=None, description="Image aspect ratio")
+    resolution: Optional[str] = Field(default=None, description="Image resolution/quality")
+    background: Optional[str] = Field(default=None, description="Background type")
+    seed: Optional[int] = Field(default=None, ge=0, description="Random seed")
+    
+    class Config:
+        extra = "allow"
+
+
+class FlexibleSpeechRequest(BaseModel):
+    """Flexible text-to-speech generation request."""
+    model: str = Field(default="fal-ai/minimax/speech-2.6-hd", description="Model endpoint")
+    text: str = Field(..., min_length=1, max_length=10000, description="Text to speak")
+    voice: Optional[str] = Field(default=None, description="Voice identifier")
+    speech_speed: Optional[float] = Field(default=None, description="Speech speed")
+    voice_emotion: Optional[str] = Field(default=None, description="Voice emotion")
+    
+    class Config:
+        extra = "allow"
 
 
 # =============================================================================
@@ -94,6 +127,12 @@ def _get_asset_type(gen_type: str) -> str:
         "image-to-video": "video",
         "text-to-speech": "speech",
         "text-to-audio": "audio",
+        "text-to-music": "audio",
+        "video-to-audio": "audio",
+        "avatar": "video",
+        "reference-to-video": "video",
+        "first-last-frame-to-video": "video",
+        "retake": "video",
     }
     return mapping.get(gen_type, "unknown")
 
@@ -105,8 +144,106 @@ def _get_event_name(gen_type: str) -> str:
         "text-to-video": "ai/video.generate",
         "image-to-video": "ai/video-from-image.generate",
         "text-to-speech": "ai/speech.generate",
+        "text-to-audio": "ai/audio.generate",
+        "text-to-music": "ai/music.generate",
+        "video-to-audio": "ai/video-audio.generate",
+        "avatar": "ai/avatar.generate",
+        "reference-to-video": "ai/video-from-image.generate",
+        "first-last-frame-to-video": "ai/video-from-image.generate",
+        "retake": "ai/video.generate",
     }
     return mapping.get(gen_type, "ai/generate")
+
+
+def _needs_credit_reservation(model_id: str, params: dict[str, Any]) -> bool:
+    """
+    Check if a model requires credit reservation based on billing_strategy.
+    
+    Reads from model's billing_strategy field in provider.json.
+    Defaults to "direct" if not specified.
+    
+    Args:
+        model_id: The model identifier
+        params: Generation parameters (unused, kept for API compatibility)
+        
+    Returns:
+        True if the model needs credit reservation
+    """
+    model = get_model(model_id)
+    if not model:
+        return False
+    
+    # Read billing strategy from config (default: direct)
+    billing_strategy = model.get("billing_strategy", "direct")
+    
+    return billing_strategy == "reservation"
+
+
+def _calculate_credits_for_model(
+    model_id: str, 
+    params: dict[str, Any]
+) -> tuple[int, bool, Optional[float]]:
+    """
+    Calculate credits needed for a generation request.
+    
+    Uses the registry's calculate_cost function and converts USD to credits.
+    For models with unknown duration, estimates from text input.
+    
+    Args:
+        model_id: The model identifier
+        params: Generation parameters (duration, resolution, etc.)
+        
+    Returns:
+        Tuple of (credits_needed, needs_reservation, estimated_duration)
+    """
+    model = get_model(model_id)
+    if not model:
+        return 0, False, None
+    
+    needs_reservation = _needs_credit_reservation(model_id, params)
+    model_type = model.get("type", "")
+    estimated_duration: Optional[float] = None
+    
+    if needs_reservation:
+        # Estimate duration from text input
+        text = get_text_from_params(params)
+        estimated_duration = estimate_duration_from_text(text, model_type)
+        duration = estimated_duration
+    else:
+        # Use user-specified duration or default
+        duration = params.get("duration", 1)
+    
+    # Calculate cost in USD
+    cost_usd = calculate_cost(model_id, quantity=duration, params=params)
+    
+    # Convert to credits (1 USD = 100 credits)
+    credits = int(cost_usd * USD_TO_CREDITS)
+    
+    # Minimum 1 credit for any generation
+    return max(credits, 1), needs_reservation, estimated_duration
+
+
+def _validate_request_params(model_id: str, params: dict[str, Any]) -> None:
+    """
+    Validate request parameters against the model's schema.
+    
+    Args:
+        model_id: The model identifier
+        params: Parameters to validate
+        
+    Raises:
+        HTTPException: If validation fails
+    """
+    validation = validate_params(model_id, params)
+    if not validation["valid"]:
+        raise HTTPException(
+            status_code=400, 
+            detail={
+                "error": "validation_error",
+                "message": "Invalid parameters",
+                "errors": validation["errors"]
+            }
+        )
 
 
 async def _create_generation_job(
@@ -114,33 +251,128 @@ async def _create_generation_job(
     params: dict[str, Any],
     user_id: Optional[str],
     workplace_id: Optional[str],
+    skip_validation: bool = False,
 ) -> JobResponse:
     """
     Common logic for creating a generation job.
+    
+    For models with unknown output duration (avatar, speech), uses credit reservation
+    system to reserve credits upfront and settle after generation completes.
     
     Args:
         model_id: The model identifier
         params: Generation parameters
         user_id: Optional user ID for asset tracking
         workplace_id: Optional workplace ID
+        skip_validation: Skip parameter validation (for unified endpoint)
         
     Returns:
         JobResponse with job and asset IDs
+        
+    Raises:
+        HTTPException 402: If insufficient credits
     """
+    # Set user context in Sentry for error tracking
+    if user_id:
+        sentry_sdk.set_user({"id": user_id})
+    else:
+        sentry_sdk.set_user(None)
+    
     # Validate model
     if not is_valid_model(model_id):
         raise HTTPException(status_code=400, detail=f"Invalid or disabled model: {model_id}")
+    
+    # Validate parameters dynamically
+    if not skip_validation:
+        _validate_request_params(model_id, params)
+    
+    # Calculate credits needed (may include estimation for unknown duration models)
+    credits_needed, needs_reservation, estimated_duration = _calculate_credits_for_model(model_id, params)
+    
+    # For reservations, calculate the reserved amount (with buffer)
+    reserved_amount = int(credits_needed * BUFFER_MULTIPLIER) if needs_reservation else credits_needed
+    
+    # Check credits availability (use reserved_amount for models needing reservation)
+    check_amount = reserved_amount if needs_reservation else credits_needed
+    
+    if user_id and check_amount > 0:
+        has_credits = await credit_service.has_sufficient_credits(user_id, check_amount)
+        if not has_credits:
+            balance = await credit_service.get_balance(user_id)
+            raise HTTPException(
+                status_code=402,
+                detail={
+                    "error": "insufficient_credits",
+                    "message": "Insufficient credits for this generation",
+                    "credits_needed": check_amount,
+                    "credits_available": balance,
+                    "estimated_duration": estimated_duration if needs_reservation else None,
+                }
+            )
     
     # Get generation type from registry
     gen_type = _get_generation_type(model_id)
     asset_type = _get_asset_type(gen_type)
     event_name = _get_event_name(gen_type)
     
-    # Create job record
+    # Create job record first (need job_id for credits)
     job_id = job_store.create_job(
         job_type=gen_type,
-        request_data={"model": model_id, **params},
+        request_data={
+            "model": model_id, 
+            "credits": credits_needed,
+            "needs_reservation": needs_reservation,
+            "estimated_duration": estimated_duration,
+            **params
+        },
     )
+    # #region agent log
+    import json
+    with open("/Users/serhatcamici/dev/octupost-stack/.cursor/debug.log", "a") as f:
+        f.write(json.dumps({"location":"generate.py:_create_generation_job","message":"API job created","data":{"job_id":job_id,"model_id":model_id,"gen_type":gen_type,"job_store_id":id(job_store)},"timestamp":__import__("time").time()*1000,"sessionId":"debug-session","hypothesisId":"A,D"})+"\n")
+    # #endregion
+    
+    # Handle credits: reserve or deduct
+    reservation_id: Optional[str] = None
+    
+    if user_id and check_amount > 0:
+        if needs_reservation:
+            # Reserve credits for models with unknown duration
+            reservation_id = await credit_service.reserve_credits(
+                user_id=user_id,
+                estimated_amount=credits_needed,
+                job_id=job_id,
+                model_id=model_id,
+            )
+            if not reservation_id:
+                # Race condition - someone else used credits
+                job_store.update_job_status(job_id, JobStatus.FAILED, error="Insufficient credits for reservation")
+                raise HTTPException(
+                    status_code=402,
+                    detail={
+                        "error": "insufficient_credits",
+                        "message": "Credits were used by another request",
+                    }
+                )
+        else:
+            # Direct deduction for models with known duration
+            deducted = await credit_service.deduct_credits(
+                user_id=user_id,
+                amount=credits_needed,
+                model_id=model_id,
+                job_id=job_id,
+                description=f"{gen_type} generation",
+            )
+            if not deducted:
+                # Race condition - someone else used credits
+                job_store.update_job_status(job_id, JobStatus.FAILED, error="Insufficient credits")
+                raise HTTPException(
+                    status_code=402,
+                    detail={
+                        "error": "insufficient_credits",
+                        "message": "Credits were used by another request",
+                    }
+                )
     
     # Create asset record if user is authenticated
     asset_id = None
@@ -155,10 +387,15 @@ async def _create_generation_job(
         asset_id = asset.get("id") if asset else None
     
     # Prepare event data
+    # Include reservation_id for settlement, or credits_used for direct refund
     event_data = {
         "job_id": job_id,
         "asset_id": asset_id,
         "model": model_id,
+        "user_id": user_id,
+        "credits_used": credits_needed,  # Estimated credits (for both refund and settlement)
+        "reservation_id": reservation_id,  # None if direct deduction
+        "estimated_duration": estimated_duration,  # For logging/debugging
         **params,
     }
     
@@ -170,6 +407,22 @@ async def _create_generation_job(
     except Exception as exc:
         error_message = f"Failed to enqueue {gen_type} generation job"
         job_store.update_job_status(job_id, JobStatus.FAILED, error=str(exc))
+        
+        # Release reservation or refund credits on failure
+        if user_id:
+            if reservation_id:
+                await credit_service.release_reservation(
+                    reservation_id, 
+                    reason=f"Failed to enqueue job: {str(exc)[:100]}"
+                )
+            elif credits_needed > 0:
+                await credit_service.refund_credits(
+                    user_id=user_id,
+                    amount=credits_needed,
+                    job_id=job_id,
+                    description=f"Failed to enqueue job: {str(exc)[:100]}",
+                )
+        
         if asset_id:
             try:
                 supabase_service.update_asset_status(
@@ -207,18 +460,22 @@ async def generate(
     Create a generation job using any model from the registry.
     
     The model ID determines the generation type (text-to-image, text-to-video, etc.).
-    Parameters are validated against the model's schema in the registry.
+    Parameters are validated dynamically against the model's schema in provider.json.
     """
+    # Validate parameters against model's schema
+    _validate_request_params(request.model, request.params)
+    
     return await _create_generation_job(
         model_id=request.model,
         params=request.params,
         user_id=x_user_id,
         workplace_id=x_workplace_id,
+        skip_validation=True,  # Already validated above
     )
 
 
 # =============================================================================
-# Legacy Endpoints (for backward compatibility)
+# Type-Specific Endpoints (with dynamic validation)
 # =============================================================================
 
 @router.post(
@@ -229,12 +486,14 @@ async def generate(
     description="Start an async text-to-image generation job",
 )
 async def generate_image(
-    request: TextToImageRequest,
+    request: FlexibleImageRequest,
     x_user_id: Optional[str] = Header(None, alias="X-User-Id"),
     x_workplace_id: Optional[str] = Header(None, alias="X-Workplace-Id"),
 ) -> JobResponse:
-    """Create a text-to-image generation job."""
+    """Create a text-to-image generation job with dynamic validation."""
+    # Get all params including extras
     params = request.model_dump(exclude={"model"}, exclude_none=True)
+    
     return await _create_generation_job(
         model_id=request.model,
         params=params,
@@ -251,12 +510,13 @@ async def generate_image(
     description="Start an async text-to-video generation job",
 )
 async def generate_video(
-    request: TextToVideoRequest,
+    request: FlexibleVideoRequest,
     x_user_id: Optional[str] = Header(None, alias="X-User-Id"),
     x_workplace_id: Optional[str] = Header(None, alias="X-Workplace-Id"),
 ) -> JobResponse:
-    """Create a text-to-video generation job."""
+    """Create a text-to-video generation job with dynamic validation."""
     params = request.model_dump(exclude={"model"}, exclude_none=True)
+    
     return await _create_generation_job(
         model_id=request.model,
         params=params,
@@ -273,12 +533,13 @@ async def generate_video(
     description="Start an async image-to-video generation job",
 )
 async def generate_video_from_image(
-    request: ImageToVideoRequest,
+    request: FlexibleImageToVideoRequest,
     x_user_id: Optional[str] = Header(None, alias="X-User-Id"),
     x_workplace_id: Optional[str] = Header(None, alias="X-Workplace-Id"),
 ) -> JobResponse:
-    """Create an image-to-video generation job."""
+    """Create an image-to-video generation job with dynamic validation."""
     params = request.model_dump(exclude={"model"}, exclude_none=True)
+    
     return await _create_generation_job(
         model_id=request.model,
         params=params,
@@ -295,16 +556,16 @@ async def generate_video_from_image(
     description="Start an async text-to-speech generation job",
 )
 async def generate_speech(
-    request: TextToSpeechRequest,
+    request: FlexibleSpeechRequest,
     x_user_id: Optional[str] = Header(None, alias="X-User-Id"),
     x_workplace_id: Optional[str] = Header(None, alias="X-Workplace-Id"),
 ) -> JobResponse:
-    """Create a text-to-speech generation job."""
+    """Create a text-to-speech generation job with dynamic validation."""
     params = request.model_dump(exclude={"model"}, exclude_none=True)
+    
     return await _create_generation_job(
         model_id=request.model,
         params=params,
         user_id=x_user_id,
         workplace_id=x_workplace_id,
     )
-
