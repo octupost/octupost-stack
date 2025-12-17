@@ -45,6 +45,29 @@ def _get_default_values(model_config: dict) -> dict[str, Any]:
     return defaults
 
 
+def _set_nested_value(obj: dict, path: str, value: Any) -> None:
+    """
+    Set a value in a nested dictionary using dot notation path.
+    
+    Example: _set_nested_value({}, "audio_url.url", "http://...") 
+             -> {"audio_url": {"url": "http://..."}}
+    
+    Args:
+        obj: Dictionary to modify
+        path: Dot-separated path (e.g., "audio_url.url")
+        value: Value to set
+    """
+    keys = path.split(".")
+    current = obj
+    
+    for key in keys[:-1]:
+        if key not in current:
+            current[key] = {}
+        current = current[key]
+    
+    current[keys[-1]] = value
+
+
 def transform_params(params: dict[str, Any], model_config: dict) -> dict[str, Any]:
     """
     Transform parameters based on model's parameter definitions.
@@ -52,7 +75,7 @@ def transform_params(params: dict[str, Any], model_config: dict) -> dict[str, An
     This handles:
     1. Type conversion based on mapping_type
     2. Special transformations from notes (e.g., "Add s at the end")
-    3. Key renaming based on mapping
+    3. Key renaming based on mapping (including nested paths like "audio_url.url")
     4. Duration to num_frames multiplication
     5. Merging default_values
     
@@ -90,18 +113,27 @@ def transform_params(params: dict[str, Any], model_config: dict) -> dict[str, An
         # Apply transformations based on notes
         transformed_value = _apply_transformations(value, mapping, mapping_type, notes)
         
-        # Store with the mapped key
-        result[mapping] = transformed_value
+        # Handle nested mapping (e.g., "audio_url.url" -> {audio_url: {url: value}})
+        if "." in mapping:
+            _set_nested_value(result, mapping, transformed_value)
+        else:
+            result[mapping] = transformed_value
     
     # Apply defaults for missing required parameters
     for key, param_def in param_defs.items():
         mapping = param_def.get("mapping", key)
-        if mapping not in result and "default" in param_def:
+        # For nested mappings, check the root key
+        root_key = mapping.split(".")[0] if "." in mapping else mapping
+        if root_key not in result and "default" in param_def:
             default = param_def["default"]
             if default != "":  # Skip empty string defaults
                 mapping_type = param_def.get("mapping_type", param_def.get("type", "string"))
                 notes = param_def.get("notes", "")
-                result[mapping] = _apply_transformations(default, mapping, mapping_type, notes)
+                transformed_default = _apply_transformations(default, mapping, mapping_type, notes)
+                if "." in mapping:
+                    _set_nested_value(result, mapping, transformed_default)
+                else:
+                    result[mapping] = transformed_default
     
     return result
 

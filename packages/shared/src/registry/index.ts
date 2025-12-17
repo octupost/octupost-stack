@@ -1,30 +1,17 @@
 /**
- * Provider Registry
+ * Provider Registry (Minimal)
  *
- * Centralized provider configuration and query helpers.
+ * Centralized provider configuration with minimal business logic.
+ * Parameter schemas are fetched dynamically from FAL's OpenAPI endpoint.
  * Import from "@octupost/shared/registry"
  */
 
 import providersData from "./provider.json"
 import type {
   Provider,
-  ProviderParameter,
-  ProviderParentType,
   ProviderType,
   ProviderTier,
-  ParameterEntry,
-  DurationRange,
-  SpeedRange,
-  AcceptedValues,
-  FormValues,
-} from "./types"
-import {
-  isDefaultValuesEntry,
-  isDurationAcceptedValues,
-  isSpeedAcceptedValues,
-  isArrayAcceptedValues,
-  isAvatarAcceptedValues,
-  type AvatarAcceptedValue,
+  OutputMediaType,
 } from "./types"
 
 // =============================================================================
@@ -60,10 +47,10 @@ export function getProvidersByType(type: ProviderType): Provider[] {
 }
 
 /**
- * Get all providers of a specific parent type.
+ * Get all active providers that produce one of the specified output media types.
  */
-export function getProvidersByParentType(parentType: ProviderParentType): Provider[] {
-  return providers.filter((p) => p.parent_type === parentType && p.is_active)
+export function getProvidersByOutputMediaType(types: OutputMediaType[]): Provider[] {
+  return providers.filter((p) => types.includes(p.output_media_type) && p.is_active)
 }
 
 /**
@@ -78,253 +65,6 @@ export function getActiveProviders(): Provider[] {
  */
 export function getProvidersByTier(tier: ProviderTier): Provider[] {
   return providers.filter((p) => p.tier === tier && p.is_active)
-}
-
-// =============================================================================
-// Parameter Helpers
-// =============================================================================
-
-/**
- * Get displayable parameters (excludes default_values entries).
- */
-export function getProviderParameters(provider: Provider): ProviderParameter[] {
-  return provider.parameters.filter(
-    (p): p is ProviderParameter => !isDefaultValuesEntry(p)
-  )
-}
-
-/**
- * Get the default values object for a provider.
- */
-export function getProviderDefaultValues(provider: Provider): Record<string, unknown> {
-  const entry = provider.parameters.find(isDefaultValuesEntry)
-  return entry?.default_values ?? {}
-}
-
-/**
- * Get a specific parameter by key.
- */
-export function getParameter(provider: Provider, key: string): ProviderParameter | undefined {
-  return getProviderParameters(provider).find((p) => p.key === key)
-}
-
-/**
- * Check if a provider has a specific parameter.
- */
-export function hasParameter(provider: Provider, key: string): boolean {
-  return getParameter(provider, key) !== undefined
-}
-
-// =============================================================================
-// Parameter Value Helpers
-// =============================================================================
-
-/**
- * Get duration range from a provider.
- * Returns null if provider doesn't have a duration parameter.
- */
-export function getDurationRange(provider: Provider): DurationRange | null {
-  const param = getParameter(provider, "duration")
-  if (!param?.accepted_values) return null
-
-  if (isDurationAcceptedValues(param.accepted_values)) {
-    return {
-      min: param.accepted_values.min_duration,
-      max: param.accepted_values.max_duration,
-      step: param.accepted_values.steps || 1,
-    }
-  }
-
-  return null
-}
-
-/**
- * Get speed range from a provider.
- * Returns null if provider doesn't have a speed parameter.
- */
-export function getSpeedRange(provider: Provider): SpeedRange | null {
-  const param = getParameter(provider, "speech_speed")
-  if (!param?.accepted_values) return null
-
-  if (isSpeedAcceptedValues(param.accepted_values)) {
-    return {
-      min: param.accepted_values.min_speed,
-      max: param.accepted_values.max_speed,
-      step: param.accepted_values.steps || 0.1,
-    }
-  }
-
-  return null
-}
-
-/**
- * Get accepted values array for a parameter.
- * Returns empty array if not an array type.
- */
-export function getAcceptedValuesArray(
-  acceptedValues: AcceptedValues | undefined
-): (string | number)[] {
-  if (!acceptedValues) return []
-  if (isArrayAcceptedValues(acceptedValues)) return acceptedValues
-  return []
-}
-
-/**
- * Get resolution options from a provider.
- */
-export function getResolutions(provider: Provider): string[] {
-  const param = getParameter(provider, "resolution")
-  if (!param?.accepted_values) return []
-  return getAcceptedValuesArray(param.accepted_values) as string[]
-}
-
-/**
- * Get aspect ratio options from a provider.
- */
-export function getAspectRatios(provider: Provider): string[] {
-  const param = getParameter(provider, "aspect_ratio")
-  if (!param?.accepted_values) return []
-  return getAcceptedValuesArray(param.accepted_values) as string[]
-}
-
-/**
- * Get voice options from a provider.
- */
-export function getVoices(provider: Provider): string[] {
-  const param = getParameter(provider, "voice")
-  if (!param?.accepted_values) return []
-  return getAcceptedValuesArray(param.accepted_values) as string[]
-}
-
-/**
- * Get voice emotion options from a provider.
- */
-export function getVoiceEmotions(provider: Provider): string[] {
-  const param = getParameter(provider, "voice_emotion")
-  if (!param?.accepted_values) return []
-  return getAcceptedValuesArray(param.accepted_values) as string[]
-}
-
-/**
- * Get avatar options from a provider (just names for backward compatibility).
- */
-export function getAvatars(provider: Provider): string[] {
-  const param = getParameter(provider, "avatar")
-  if (!param?.accepted_values) return []
-  
-  // Handle new object format with metadata
-  if (isAvatarAcceptedValues(param.accepted_values)) {
-    return param.accepted_values.map(a => a.name)
-  }
-  
-  // Handle legacy string array format
-  return getAcceptedValuesArray(param.accepted_values) as string[]
-}
-
-/** Raw avatar data as it comes from JSON (snake_case) */
-interface RawAvatarData {
-  name: string
-  image_url?: string
-}
-
-/**
- * Get avatar options with metadata (name and image URL).
- */
-export function getAvatarsWithMeta(provider: Provider): AvatarAcceptedValue[] {
-  const param = getParameter(provider, "avatar")
-  if (!param?.accepted_values) return []
-  
-  // Handle new object format - transform snake_case to camelCase
-  if (isAvatarAcceptedValues(param.accepted_values)) {
-    return (param.accepted_values as unknown as RawAvatarData[]).map(avatar => ({
-      name: avatar.name,
-      imageUrl: avatar.image_url || "",
-    }))
-  }
-  
-  // Handle legacy string array - convert to objects without images
-  if (isArrayAcceptedValues(param.accepted_values)) {
-    return (param.accepted_values as string[]).map(name => ({ 
-      name, 
-      imageUrl: "",
-    }))
-  }
-  
-  return []
-}
-
-/**
- * Get image URL for an avatar by name.
- */
-export function getAvatarImageUrl(provider: Provider, avatarName: string): string | undefined {
-  const avatars = getAvatarsWithMeta(provider)
-  return avatars.find(a => a.name === avatarName)?.imageUrl || undefined
-}
-
-/**
- * Get max text length for a provider's text parameter.
- * Returns null if provider doesn't have a text parameter with max_length.
- */
-export function getTextMaxLength(provider: Provider): number | null {
-  const param = getParameter(provider, "text")
-  return param?.max_length ?? null
-}
-
-/**
- * Check if provider uses text prompt input (e.g., Argil avatars).
- * This is different from audio_url providers (e.g., Kling avatars).
- */
-export function usesPromptInput(provider: Provider): boolean {
-  const hasPrompt = hasParameter(provider, "prompt")
-  const hasAudioUrl = hasParameter(provider, "audio_url")
-  const hasImageUrl = hasParameter(provider, "image_url")
-  
-  // Provider uses prompt input if it has prompt but NOT audio_url
-  // (Kling has both prompt and audio_url, but audio_url is the main input)
-  return hasPrompt && !hasAudioUrl && !hasImageUrl
-}
-
-/**
- * Check if provider uses audio URL input (e.g., Kling avatars).
- */
-export function usesAudioUrlInput(provider: Provider): boolean {
-  return hasParameter(provider, "audio_url")
-}
-
-/**
- * Check if provider has transparent background option.
- */
-export function hasTransparentBackgroundOption(provider: Provider): boolean {
-  return hasParameter(provider, "transparent_background")
-}
-
-/**
- * Get FPS options from a provider.
- */
-export function getFpsOptions(provider: Provider): number[] {
-  const param = getParameter(provider, "fps")
-  if (!param?.accepted_values) return []
-  return getAcceptedValuesArray(param.accepted_values) as number[]
-}
-
-// =============================================================================
-// Form Initialization
-// =============================================================================
-
-/**
- * Get initial form values for a provider (uses defaults from parameters).
- */
-export function getInitialFormValues(provider: Provider): FormValues {
-  const values: FormValues = {}
-  const params = getProviderParameters(provider)
-
-  for (const param of params) {
-    if (param.default !== undefined) {
-      values[param.key] = param.default
-    }
-  }
-
-  return values
 }
 
 // =============================================================================
@@ -343,20 +83,6 @@ export function getDisplayName(provider: Provider): string {
  */
 export function getFps(provider: Provider): number | null {
   return provider.fps
-}
-
-/**
- * Check if provider supports audio generation.
- */
-export function supportsAudio(provider: Provider): boolean {
-  return hasParameter(provider, "enable_audio")
-}
-
-/**
- * Check if provider supports prompt enhancement.
- */
-export function supportsPromptEnhancement(provider: Provider): boolean {
-  return hasParameter(provider, "enhance_prompt")
 }
 
 /**
@@ -390,17 +116,17 @@ export type VideoGenerationMode = "text-to-video" | "first-frame" | "first-last-
  * Check if a provider supports a specific video generation mode.
  */
 export function supportsVideoMode(provider: Provider, mode: VideoGenerationMode): boolean {
-  const { parent_type, type } = provider
+  const { type } = provider
 
   switch (mode) {
     case "text-to-video":
-      return parent_type === "text-to-video" && type === "text-to-video"
+      return type === "text-to-video"
     case "first-frame":
-      return parent_type === "image-to-video" && type === "image-to-video"
+      return type === "image-to-video"
     case "first-last-frame":
-      return parent_type === "image-to-video" && type === "first-last-frame-to-video"
+      return type === "first-last-frame-to-video"
     case "components":
-      return parent_type === "image-to-video" && type === "reference-to-video"
+      return type === "reference-to-video"
     default:
       return false
   }
@@ -412,6 +138,3 @@ export function supportsVideoMode(provider: Provider, mode: VideoGenerationMode)
 export function getProvidersForVideoMode(mode: VideoGenerationMode): Provider[] {
   return getActiveProviders().filter((p) => supportsVideoMode(p, mode))
 }
-
-
-

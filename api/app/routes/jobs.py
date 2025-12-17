@@ -43,11 +43,6 @@ async def get_job_status(
     """
     _set_user_context(x_user_id)
     job = job_store.get_job(job_id)
-    # #region agent log
-    import json
-    with open("/Users/serhatcamici/dev/octupost-stack/.cursor/debug.log", "a") as f:
-        f.write(json.dumps({"location":"jobs.py:get_job_status","message":"API get_job_status called","data":{"job_id":job_id,"job_found":job is not None,"status":job["status"].value if job else None,"progress":job.get("progress") if job else None,"has_result":job.get("result") is not None if job else None,"job_store_id":id(job_store)},"timestamp":__import__("time").time()*1000,"sessionId":"debug-session","hypothesisId":"A,B"})+"\n")
-    # #endregion
 
     if not job:
         raise HTTPException(
@@ -132,15 +127,22 @@ async def cancel_job(
 async def list_jobs(
     limit: int = Query(default=50, ge=1, le=100, description="Maximum jobs to return"),
     status: Optional[JobStatus] = Query(default=None, description="Filter by status"),
+    job_type: Optional[str] = Query(default=None, description="Filter by job type"),
     x_user_id: Optional[str] = Header(None, alias="X-User-Id"),
 ) -> list[JobStatusResponse]:
     """
     List recent generation jobs.
 
     Jobs are sorted by creation time (newest first).
+    Filters by owner when X-User-Id header is provided.
     """
     _set_user_context(x_user_id)
-    jobs = job_store.list_jobs(limit=limit, status=status)
+    jobs = job_store.list_jobs(
+        limit=limit, 
+        status=status, 
+        owner_id=x_user_id,
+        job_type=job_type,
+    )
 
     return [
         JobStatusResponse(

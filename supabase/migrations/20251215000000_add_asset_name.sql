@@ -11,3 +11,9 @@ ADD COLUMN IF NOT EXISTS name TEXT;
 COMMENT ON COLUMN octupost.assets.name IS 'User-friendly display name for the asset. Auto-generated on creation, editable by user.';
 
 COMMIT;
+
+
+
+
+
+

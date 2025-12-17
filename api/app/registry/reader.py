@@ -225,12 +225,39 @@ def _get_param_definitions(model: dict) -> dict[str, dict]:
     return param_defs
 
 
+def _get_param_definitions_with_fal_fallback(model_id: str, model: dict) -> dict[str, dict]:
+    """
+    Get parameter definitions from provider.json, falling back to FAL OpenAPI schema.
+    
+    This ensures validation works even when provider.json doesn't have parameter definitions.
+    """
+    # First try provider.json
+    param_defs = _get_param_definitions(model)
+    
+    # If provider.json has parameters, use those (they may have custom overrides)
+    if param_defs:
+        return param_defs
+    
+    # Otherwise, fetch from FAL OpenAPI schema
+    try:
+        from app.services.fal_schema_service import fal_schema_service
+        return fal_schema_service.get_param_definitions(model_id)
+    except Exception as e:
+        # Log error but continue - validation will be lenient
+        import logging
+        logging.warning(f"Failed to fetch FAL schema for {model_id}: {e}")
+        return {}
+
+
 def validate_params(
     model_id: str,
     params: dict[str, Any],
 ) -> ValidationResult:
     """
-    Validate parameters against a model's accepted_values from provider.json.
+    Validate parameters against a model's schema.
+    
+    First checks provider.json for parameter definitions.
+    If not defined there, fetches schema from FAL's OpenAPI endpoint.
     
     Note: This validation is lenient - it only checks values that are provided.
     Required parameters with defaults will be filled in by the transformer.
@@ -247,7 +274,30 @@ def validate_params(
         return {"valid": False, "errors": [f"Unknown model: {model_id}"]}
     
     errors: list[str] = []
-    param_defs = _get_param_definitions(model)
+    param_defs = _get_param_definitions_with_fal_fallback(model_id, model)
+    
+    # #region agent log
+    import json
+    from datetime import datetime
+    def _debug_log_validation(location: str, message: str, data: dict, hypothesis_id: str = ""):
+        log_entry = {"location": location, "message": message, "data": data, "timestamp": datetime.now().isoformat(), "sessionId": "debug-session", "hypothesisId": hypothesis_id}
+        try:
+            with open("/Users/serhatcamici/dev/octupost-stack/.cursor/debug.log", "a") as f:
+                f.write(json.dumps(log_entry) + "\n")
+        except Exception:
+            pass
+    _debug_log_validation("reader.py:validate_params", "Validation param_defs", {"model_id": model_id, "param_keys": list(param_defs.keys()), "params_provided": list(params.keys()), "source": "fal_schema" if not _get_param_definitions(model) else "provider.json"}, "H2")
+    # #endregion
+    
+    # Build a mapping target lookup - if another param maps to the same target and is provided, that's OK
+    mapping_targets: dict[str, list[str]] = {}
+    for k, p in param_defs.items():
+        target = p.get("mapping", k)
+        # Handle nested mappings - use root key
+        root_target = target.split(".")[0] if "." in target else target
+        if root_target not in mapping_targets:
+            mapping_targets[root_target] = []
+        mapping_targets[root_target].append(k)
     
     # Check required parameters that are truly required (no default, not a boolean with implicit false)
     for key, param_def in param_defs.items():
@@ -259,12 +309,26 @@ def validate_params(
             has_default = "default" in param_def
             is_empty_default = param_def.get("default") == ""
             
+            # #region agent log
+            _debug_log_validation("reader.py:required_check", f"Checking required param: {key}", {"key": key, "required": required, "has_default": has_default, "is_empty_default": is_empty_default, "param_type": param_type}, "H2")
+            # #endregion
+            
             # Booleans have implicit false default, skip validation
             if param_type == "boolean":
                 continue
             
             # Skip if has a non-empty default
             if has_default and not is_empty_default:
+                continue
+            
+            # Check if another param with the same mapping target is provided
+            # e.g., if image_url maps to "avatar" and avatar maps to "avatar", 
+            # and avatar is provided, then image_url requirement is satisfied
+            mapping_target = param_def.get("mapping", key)
+            root_target = mapping_target.split(".")[0] if "." in mapping_target else mapping_target
+            sibling_keys = mapping_targets.get(root_target, [])
+            sibling_provided = any(k in params and k != key for k in sibling_keys)
+            if sibling_provided:
                 continue
             
             # Only error on truly required params with no default
@@ -286,7 +350,7 @@ def validate_params(
                 errors.append(f"{key} must be an integer")
                 continue
         
-        if param_type == "float" and not isinstance(value, (int, float)):
+        if param_type in ("float", "number") and not isinstance(value, (int, float)):
             errors.append(f"{key} must be a number")
             continue
         
@@ -300,7 +364,7 @@ def validate_params(
                 errors.append(f"{key} must be a string")
                 continue
         
-        # Validate against accepted_values
+        # Validate against accepted_values / enum
         if accepted is not None:
             if isinstance(accepted, list):
                 # Check if this is a list of objects (like avatar accepted_values)
@@ -321,6 +385,15 @@ def validate_params(
                     errors.append(f"{key} must be >= {min_val}")
                 if max_val is not None and value > max_val:
                     errors.append(f"{key} must be <= {max_val}")
+        
+        # Validate against minimum/maximum from OpenAPI schema
+        minimum = param_def.get("minimum")
+        maximum = param_def.get("maximum")
+        
+        if minimum is not None and isinstance(value, (int, float)) and value < minimum:
+            errors.append(f"{key} must be >= {minimum}")
+        if maximum is not None and isinstance(value, (int, float)) and value > maximum:
+            errors.append(f"{key} must be <= {maximum}")
     
     return {"valid": len(errors) == 0, "errors": errors}
 

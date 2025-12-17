@@ -9,6 +9,9 @@ from app.inngest.functions.generate import (
     generate_video_fn,
     generate_video_from_image_fn,
     generate_speech_fn,
+    generate_avatar_fn,
+    generate_music_fn,
+    generate_audio_fn,
 )
 
 # List of all Inngest functions to register
@@ -17,6 +20,9 @@ all_functions = [
     generate_video_fn,
     generate_video_from_image_fn,
     generate_speech_fn,
+    generate_avatar_fn,
+    generate_music_fn,
+    generate_audio_fn,
 ]
 
 __all__ = [
@@ -24,5 +30,8 @@ __all__ = [
     "generate_video_fn",
     "generate_video_from_image_fn",
     "generate_speech_fn",
+    "generate_avatar_fn",
+    "generate_music_fn",
+    "generate_audio_fn",
     "all_functions",
 ]

@@ -176,3 +176,9 @@ SET name = COALESCE(
 WHERE name IS NULL;
 
 COMMIT;
+
+
+
+
+
+

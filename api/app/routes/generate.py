@@ -100,11 +100,16 @@ class FlexibleSpeechRequest(BaseModel):
     model: str = Field(default="fal-ai/minimax/speech-2.6-hd", description="Model endpoint")
     text: str = Field(..., min_length=1, max_length=10000, description="Text to speak")
     voice: Optional[str] = Field(default=None, description="Voice identifier")
-    speech_speed: Optional[float] = Field(default=None, description="Speech speed")
+    speech_speed: Optional[float] = Field(default=None, alias="speed", description="Speech speed")
     voice_emotion: Optional[str] = Field(default=None, description="Voice emotion")
+    # ElevenLabs-specific parameters
+    stability: Optional[float] = Field(default=None, ge=0, le=1, description="ElevenLabs voice stability (0-1)")
+    similarity_boost: Optional[float] = Field(default=None, ge=0, le=1, description="ElevenLabs similarity boost (0-1)")
+    style: Optional[float] = Field(default=None, ge=0, le=1, description="ElevenLabs style exaggeration (0-1)")
     
     class Config:
         extra = "allow"
+        populate_by_name = True  # Allow both speech_speed and speed
 
 
 # =============================================================================
@@ -120,21 +125,43 @@ def _get_generation_type(model_id: str) -> str:
 
 
 def _get_asset_type(gen_type: str) -> str:
-    """Map generation type to asset type."""
+    """
+    Map generation type to specific asset type.
+    Used as fallback when frontend doesn't provide asset_type.
+    
+    Returns: image, video, avatar_video, speech, music, soundtrack
+    """
     mapping = {
         "text-to-image": "image",
         "text-to-video": "video",
         "image-to-video": "video",
         "text-to-speech": "speech",
-        "text-to-audio": "audio",
-        "text-to-music": "audio",
-        "video-to-audio": "audio",
-        "avatar": "video",
+        "text-to-audio": "soundtrack",
+        "text-to-music": "music",
+        "video-to-audio": "soundtrack",
+        "avatar": "avatar_video",
         "reference-to-video": "video",
         "first-last-frame-to-video": "video",
         "retake": "video",
     }
-    return mapping.get(gen_type, "unknown")
+    return mapping.get(gen_type, "video")
+
+
+def _get_media_type(asset_type: str) -> str:
+    """
+    Derive the fundamental media_type from a specific asset_type.
+    Used as fallback when frontend doesn't provide media_type.
+    
+    Returns: image, audio, video
+    """
+    if asset_type in ("video", "avatar_video"):
+        return "video"
+    elif asset_type == "image":
+        return "image"
+    elif asset_type in ("speech", "music", "soundtrack"):
+        return "audio"
+    else:
+        return "video"
 
 
 def _get_event_name(gen_type: str) -> str:
@@ -234,7 +261,24 @@ def _validate_request_params(model_id: str, params: dict[str, Any]) -> None:
     Raises:
         HTTPException: If validation fails
     """
+    # #region agent log
+    _debug_log("generate.py:validation_start", "Starting parameter validation", {
+        "model_id": model_id,
+        "params_keys": list(params.keys()),
+        "params_values": {k: (v[:50] if isinstance(v, str) and len(v) > 50 else v) for k, v in params.items()}
+    }, "H1,H2")
+    # #endregion
+    
     validation = validate_params(model_id, params)
+    
+    # #region agent log
+    _debug_log("generate.py:validation_result", "Validation completed", {
+        "model_id": model_id,
+        "valid": validation["valid"],
+        "errors": validation.get("errors", [])
+    }, "H1,H2")
+    # #endregion
+    
     if not validation["valid"]:
         raise HTTPException(
             status_code=400, 
@@ -289,6 +333,15 @@ async def _create_generation_job(
     # Calculate credits needed (may include estimation for unknown duration models)
     credits_needed, needs_reservation, estimated_duration = _calculate_credits_for_model(model_id, params)
     
+    # #region agent log
+    _debug_log("generate.py:credits_calc", "Credits calculated", {
+        "credits_needed": credits_needed,
+        "needs_reservation": needs_reservation,
+        "estimated_duration": estimated_duration,
+        "model_id": model_id
+    }, "H1")
+    # #endregion
+    
     # For reservations, calculate the reserved amount (with buffer)
     reserved_amount = int(credits_needed * BUFFER_MULTIPLIER) if needs_reservation else credits_needed
     
@@ -296,6 +349,13 @@ async def _create_generation_job(
     check_amount = reserved_amount if needs_reservation else credits_needed
     
     if user_id and check_amount > 0:
+        # #region agent log
+        _debug_log("generate.py:credit_check", "Checking credit balance", {
+            "user_id": user_id,
+            "check_amount": check_amount
+        }, "H3")
+        # #endregion
+        
         has_credits = await credit_service.has_sufficient_credits(user_id, check_amount)
         if not has_credits:
             balance = await credit_service.get_balance(user_id)
@@ -312,10 +372,14 @@ async def _create_generation_job(
     
     # Get generation type from registry
     gen_type = _get_generation_type(model_id)
-    asset_type = _get_asset_type(gen_type)
     event_name = _get_event_name(gen_type)
     
+    # Get asset_type and media_type from frontend params, or derive from gen_type
+    asset_type = params.get("asset_type") or _get_asset_type(gen_type)
+    media_type = params.get("media_type") or _get_media_type(asset_type)
+    
     # Create job record first (need job_id for credits)
+    # Pass owner_id for persistent storage in Supabase
     job_id = job_store.create_job(
         job_type=gen_type,
         request_data={
@@ -325,25 +389,45 @@ async def _create_generation_job(
             "estimated_duration": estimated_duration,
             **params
         },
+        owner_id=user_id,
     )
-    # #region agent log
-    import json
-    with open("/Users/serhatcamici/dev/octupost-stack/.cursor/debug.log", "a") as f:
-        f.write(json.dumps({"location":"generate.py:_create_generation_job","message":"API job created","data":{"job_id":job_id,"model_id":model_id,"gen_type":gen_type,"job_store_id":id(job_store)},"timestamp":__import__("time").time()*1000,"sessionId":"debug-session","hypothesisId":"A,D"})+"\n")
-    # #endregion
-    
     # Handle credits: reserve or deduct
     reservation_id: Optional[str] = None
     
     if user_id and check_amount > 0:
         if needs_reservation:
+            # #region agent log
+            _debug_log("generate.py:reserve_start", "Starting credit reservation", {
+                "user_id": user_id,
+                "credits_needed": credits_needed,
+                "job_id": job_id,
+                "model_id": model_id
+            }, "H1")
+            # #endregion
+            
             # Reserve credits for models with unknown duration
-            reservation_id = await credit_service.reserve_credits(
-                user_id=user_id,
-                estimated_amount=credits_needed,
-                job_id=job_id,
-                model_id=model_id,
-            )
+            try:
+                reservation_id = await credit_service.reserve_credits(
+                    user_id=user_id,
+                    estimated_amount=credits_needed,
+                    job_id=job_id,
+                    model_id=model_id,
+                )
+            except Exception as reserve_exc:
+                # #region agent log
+                _debug_log("generate.py:reserve_error", "Credit reservation FAILED with exception", {
+                    "error": str(reserve_exc),
+                    "error_type": type(reserve_exc).__name__
+                }, "H1")
+                # #endregion
+                raise
+            
+            # #region agent log
+            _debug_log("generate.py:reserve_done", "Credit reservation completed", {
+                "reservation_id": reservation_id
+            }, "H1")
+            # #endregion
+            
             if not reservation_id:
                 # Race condition - someone else used credits
                 job_store.update_job_status(job_id, JobStatus.FAILED, error="Insufficient credits for reservation")
@@ -380,11 +464,16 @@ async def _create_generation_job(
         asset = supabase_service.create_asset(
             owner_id=user_id,
             asset_type=asset_type,
+            media_type=media_type,
             source="generative_ai",
             generation_params={"model": model_id, **params},
             workplace_id=workplace_id,
         )
         asset_id = asset.get("id") if asset else None
+        
+        # Link the asset to the job for querying
+        if asset_id:
+            job_store.set_job_asset(job_id, asset_id)
     
     # Prepare event data
     # Include reservation_id for settlement, or credits_used for direct refund
@@ -399,12 +488,36 @@ async def _create_generation_job(
         **params,
     }
     
+    # #region agent log
+    _debug_log("generate.py:inngest_send_start", "Sending event to Inngest", {
+        "event_name": event_name,
+        "job_id": job_id,
+        "asset_id": asset_id
+    }, "H2")
+    # #endregion
+    
     # Send event to Inngest
     try:
         await inngest_client.send(
             inngest.Event(name=event_name, data=event_data)
         )
+        
+        # #region agent log
+        _debug_log("generate.py:inngest_send_success", "Event sent to Inngest successfully", {
+            "event_name": event_name,
+            "job_id": job_id
+        }, "H2")
+        # #endregion
     except Exception as exc:
+        # #region agent log
+        _debug_log("generate.py:inngest_send_failed", "Failed to send event to Inngest", {
+            "error": str(exc),
+            "error_type": type(exc).__name__,
+            "event_name": event_name,
+            "job_id": job_id
+        }, "H2")
+        # #endregion
+        
         error_message = f"Failed to enqueue {gen_type} generation job"
         job_store.update_job_status(job_id, JobStatus.FAILED, error=str(exc))
         
@@ -432,6 +545,15 @@ async def _create_generation_job(
                 pass  # Best effort
         raise HTTPException(status_code=503, detail=error_message)
     
+    # #region agent log
+    _debug_log("generate.py:success", "Generation job created successfully", {
+        "job_id": job_id,
+        "asset_id": asset_id,
+        "gen_type": gen_type,
+        "model_id": model_id
+    }, "H1")
+    # #endregion
+    
     return JobResponse(
         job_id=job_id,
         asset_id=asset_id,
@@ -443,6 +565,26 @@ async def _create_generation_job(
 # =============================================================================
 # Unified Generation Endpoint
 # =============================================================================
+
+# #region agent log
+def _debug_log(location: str, message: str, data: dict, hypothesis_id: str = ""):
+    """Write debug log entry to file."""
+    import json
+    from datetime import datetime
+    log_entry = {
+        "location": location,
+        "message": message,
+        "data": data,
+        "timestamp": datetime.now().isoformat(),
+        "sessionId": "debug-session",
+        "hypothesisId": hypothesis_id
+    }
+    try:
+        with open("/Users/serhatcamici/dev/octupost-stack/.cursor/debug.log", "a") as f:
+            f.write(json.dumps(log_entry) + "\n")
+    except Exception:
+        pass
+# #endregion
 
 @router.post(
     "",
@@ -462,8 +604,22 @@ async def generate(
     The model ID determines the generation type (text-to-image, text-to-video, etc.).
     Parameters are validated dynamically against the model's schema in provider.json.
     """
+    # #region agent log
+    _debug_log("generate.py:entry", "Generate endpoint called", {
+        "model": request.model,
+        "user_id": x_user_id,
+        "params_keys": list(request.params.keys()) if request.params else []
+    }, "H1")
+    # #endregion
+    
     # Validate parameters against model's schema
     _validate_request_params(request.model, request.params)
+    
+    # #region agent log
+    _debug_log("generate.py:validated", "Parameters validated, calling _create_generation_job", {
+        "model": request.model
+    }, "H1")
+    # #endregion
     
     return await _create_generation_job(
         model_id=request.model,

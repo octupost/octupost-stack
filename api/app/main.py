@@ -16,7 +16,7 @@ except ImportError:
     InngestIntegration = None
 
 from app.config import get_settings
-from app.routes import generate, jobs, billing
+from app.routes import generate, jobs, billing, elevenlabs
 from app.inngest.client import inngest_client
 from app.inngest.functions import all_functions
 
@@ -73,6 +73,10 @@ async def lifespan(app: FastAPI):
     if settings.openrouter_api_key:
         os.environ["OPENROUTER_API_KEY"] = settings.openrouter_api_key
     
+    # Set ElevenLabs API key for TTS
+    if settings.elevenlabs_api_key:
+        os.environ["ELEVENLABS_API_KEY"] = settings.elevenlabs_api_key
+    
     yield
     
     # Cleanup on shutdown (if needed)
@@ -104,6 +108,7 @@ def create_app() -> FastAPI:
     app.include_router(generate.router, prefix="/api/generate", tags=["Generation"])
     app.include_router(jobs.router, prefix="/api/jobs", tags=["Jobs"])
     app.include_router(billing.router, prefix="/api/billing", tags=["Billing"])
+    app.include_router(elevenlabs.router, prefix="/api/elevenlabs", tags=["ElevenLabs"])
 
     # Register Inngest webhook handler
     inngest.fast_api.serve(

@@ -32,10 +32,10 @@ def _get_result_url(result: dict, gen_type: str) -> str | None:
     if gen_type == "text-to-image":
         images = result.get("images", [])
         return images[0].get("url") if images else None
-    elif gen_type in ("text-to-video", "image-to-video"):
+    elif gen_type in ("text-to-video", "image-to-video", "avatar"):
         video = result.get("video", {})
         return video.get("url")
-    elif gen_type == "text-to-speech":
+    elif gen_type in ("text-to-speech", "text-to-audio", "text-to-music"):
         audio = result.get("audio", {})
         return audio.get("url")
     return None
@@ -62,7 +62,7 @@ def _get_result_metadata(result: dict, gen_type: str) -> dict:
             "content_type": video.get("content_type", "video/mp4"),
             "seed": result.get("seed"),
         }
-    elif gen_type == "text-to-speech":
+    elif gen_type in ("text-to-speech", "text-to-audio", "text-to-music"):
         audio = result.get("audio", {})
         return {
             "duration": audio.get("duration"),
@@ -142,11 +142,6 @@ async def _run_generation(
     # Update job status to processing
     if job_id:
         job_store.update_job_status(job_id, JobStatus.PROCESSING, progress=10)
-        # #region agent log
-        import json
-        with open("/Users/serhatcamici/dev/octupost-stack/.cursor/debug.log", "a") as f:
-            f.write(json.dumps({"location":"generate.py:_run_generation","message":"Inngest set status PROCESSING","data":{"job_id":job_id,"job_store_id":id(job_store),"gen_type":gen_type},"timestamp":__import__("time").time()*1000,"sessionId":"debug-session","hypothesisId":"A,E"})+"\n")
-        # #endregion
 
     # Update asset status to processing
     if asset_id:
@@ -183,7 +178,15 @@ async def _run_generation(
                     reservation_id=reservation_id,
                     actual_amount=actual_credits,
                 )
-                return settlement
+                # Convert dataclass to dict for Inngest serialization
+                if settlement:
+                    return {
+                        "refunded": settlement.refunded,
+                        "charged_extra": settlement.charged_extra,
+                        "final_cost": settlement.final_cost,
+                        "reserved_amount": settlement.reserved_amount,
+                    }
+                return None
             
             settlement_result = await ctx.step.run("settle-reservation", settle)
             
@@ -193,8 +196,8 @@ async def _run_generation(
                     "reservation_id": reservation_id,
                     "actual_duration": actual_duration,
                     "actual_credits": actual_credits,
-                    "refunded": settlement_result.refunded,
-                    "charged_extra": settlement_result.charged_extra,
+                    "refunded": settlement_result.get("refunded", 0),
+                    "charged_extra": settlement_result.get("charged_extra", 0),
                 })
 
         # Update asset with success status and result URL
@@ -216,11 +219,6 @@ async def _run_generation(
             job_store.update_job_status(
                 job_id, JobStatus.COMPLETED, progress=100, result=result
             )
-            # #region agent log
-            import json
-            with open("/Users/serhatcamici/dev/octupost-stack/.cursor/debug.log", "a") as f:
-                f.write(json.dumps({"location":"generate.py:_run_generation","message":"Inngest set status COMPLETED","data":{"job_id":job_id,"job_store_id":id(job_store),"gen_type":gen_type,"has_result":result is not None},"timestamp":__import__("time").time()*1000,"sessionId":"debug-session","hypothesisId":"A,E"})+"\n")
-            # #endregion
 
         return {
             "status": "completed",
@@ -446,6 +444,70 @@ async def generate_avatar_fn(ctx: inngest.Context) -> dict:
         model_id=model_id,
         params=params,
         gen_type="avatar",
+        user_id=user_id,
+        credits_used=credits_used,
+        reservation_id=reservation_id,
+    )
+
+
+@inngest_client.create_function(
+    fn_id="generate-music-v2",
+    trigger=inngest.TriggerEvent(event="ai/music.generate"),
+    retries=2,
+)
+async def generate_music_fn(ctx: inngest.Context) -> dict:
+    """Handle music generation via Inngest."""
+    event_data = ctx.event.data
+    job_id = event_data.get("job_id")
+    asset_id = event_data.get("asset_id")
+    model_id = event_data.get("model", "beatoven/music-generation")
+    user_id = event_data.get("user_id")
+    credits_used = event_data.get("credits_used", 0)
+    reservation_id = event_data.get("reservation_id")
+    
+    # Extract generation params
+    params = {k: v for k, v in event_data.items() 
+              if k not in _METADATA_FIELDS and v is not None}
+    
+    return await _run_generation(
+        ctx=ctx,
+        job_id=job_id,
+        asset_id=asset_id,
+        model_id=model_id,
+        params=params,
+        gen_type="text-to-music",
+        user_id=user_id,
+        credits_used=credits_used,
+        reservation_id=reservation_id,
+    )
+
+
+@inngest_client.create_function(
+    fn_id="generate-audio-v2",
+    trigger=inngest.TriggerEvent(event="ai/audio.generate"),
+    retries=2,
+)
+async def generate_audio_fn(ctx: inngest.Context) -> dict:
+    """Handle audio/sound effect generation via Inngest."""
+    event_data = ctx.event.data
+    job_id = event_data.get("job_id")
+    asset_id = event_data.get("asset_id")
+    model_id = event_data.get("model", "beatoven/sound-effect-generation")
+    user_id = event_data.get("user_id")
+    credits_used = event_data.get("credits_used", 0)
+    reservation_id = event_data.get("reservation_id")
+    
+    # Extract generation params
+    params = {k: v for k, v in event_data.items() 
+              if k not in _METADATA_FIELDS and v is not None}
+    
+    return await _run_generation(
+        ctx=ctx,
+        job_id=job_id,
+        asset_id=asset_id,
+        model_id=model_id,
+        params=params,
+        gen_type="text-to-audio",
         user_id=user_id,
         credits_used=credits_used,
         reservation_id=reservation_id,

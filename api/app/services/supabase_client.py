@@ -59,16 +59,19 @@ class SupabaseService:
         source: str = "generative_ai",
         generation_params: Optional[dict[str, Any]] = None,
         workplace_id: Optional[str] = None,
+        media_type: Optional[str] = None,
     ) -> Optional[dict[str, Any]]:
         """
         Create a new asset record with in_queue status.
 
         Args:
             owner_id: UUID of the asset owner (user)
-            asset_type: Type of asset (image, speech, audio, video)
+            asset_type: Type of asset (image, video, avatar_video, speech, music, soundtrack)
             source: Source of asset (local_upload, generative_ai, public_url)
             generation_params: Parameters used for generation (prompt, model, etc.)
             workplace_id: Optional workplace to associate with the asset
+            media_type: Fundamental media category (image, audio, video). 
+                       If not provided, derived from asset_type.
 
         Returns:
             The created asset record, or None if Supabase is not configured
@@ -87,10 +90,15 @@ class SupabaseService:
             prompt=prompt,
         )
 
+        # Derive media_type from asset_type if not provided
+        if media_type is None:
+            media_type = self._derive_media_type(asset_type)
+
         data = {
             "owner_id": owner_id,
             "name": asset_name,
             "type": asset_type,
+            "media_type": media_type,
             "source": source,
             "generation_status": "in_queue",
             "generation_params": generation_params or {},
@@ -362,6 +370,27 @@ class SupabaseService:
         )
 
         return len(result.data) > 0 if result.data else False
+
+    @staticmethod
+    def _derive_media_type(asset_type: str) -> str:
+        """
+        Derive the fundamental media_type from a specific asset_type.
+        
+        Args:
+            asset_type: Specific asset type (image, video, avatar_video, speech, music, soundtrack)
+            
+        Returns:
+            Fundamental media type (image, audio, video)
+        """
+        if asset_type in ("video", "avatar_video"):
+            return "video"
+        elif asset_type == "image":
+            return "image"
+        elif asset_type in ("speech", "music", "soundtrack"):
+            return "audio"
+        else:
+            # Fallback for unknown types
+            return "video"
 
 
 # Singleton instance

@@ -16,15 +16,15 @@ from app.registry import (
 )
 from .providers.base import BaseProvider
 from .providers.fal_provider import FalProvider
+from .providers.elevenlabs_provider import ElevenLabsProvider
 
 
 # Provider registry mapping provider IDs to their implementations
-# Currently all models in provider.json are Fal AI models
 PROVIDER_HANDLERS: dict[str, Type[BaseProvider]] = {
     "fal-ai": FalProvider,
+    "elevenlabs": ElevenLabsProvider,
     # Future providers:
     # "runway": RunwayProvider,
-    # "elevenlabs": ElevenLabsProvider,
     # "openai": OpenAIProvider,
 }
 
@@ -33,22 +33,21 @@ def _get_provider_id_from_endpoint(endpoint: str) -> str:
     """
     Determine the provider ID from the model endpoint.
     
-    Currently all models are Fal AI models, but this allows
-    for future expansion to other providers.
-    
     Args:
-        endpoint: The model endpoint (e.g., "fal-ai/veo3.1")
+        endpoint: The model endpoint (e.g., "fal-ai/veo3.1", "elevenlabs/eleven_multilingual_v2")
         
     Returns:
-        Provider ID (e.g., "fal-ai")
+        Provider ID (e.g., "fal-ai", "elevenlabs")
     """
     if endpoint.startswith("fal-ai/"):
         return "fal-ai"
+    if endpoint.startswith("elevenlabs/"):
+        return "elevenlabs"
     # Add other provider detection here
     # if endpoint.startswith("runway/"):
     #     return "runway"
     
-    # Default to fal-ai for now since all current models are Fal AI
+    # Default to fal-ai for backward compatibility
     return "fal-ai"
 
 
@@ -76,7 +75,7 @@ class GenerationService:
         Get or create a provider instance.
         
         Args:
-            provider_id: The provider identifier (e.g., "fal-ai")
+            provider_id: The provider identifier (e.g., "fal-ai", "elevenlabs")
             
         Returns:
             Provider instance or None if not found
@@ -88,17 +87,37 @@ class GenerationService:
         if not provider_class:
             return None
         
-        # Create provider with default config
-        provider_config = {
+        # Provider-specific configurations
+        provider_configs = {
+            "fal-ai": {
+                "name": "fal-ai",
+                "type": "sdk",
+                "sdkPackage": "fal-client",
+                "authMethod": "api-key",
+                "authEnvVar": "FAL_KEY",
+                "baseUrl": None,
+                "capabilities": [],
+                "responseMapping": {},
+            },
+            "elevenlabs": {
+                "name": "ElevenLabs",
+                "type": "api",
+                "authMethod": "api-key",
+                "authEnvVar": "ELEVENLABS_API_KEY",
+                "baseUrl": "https://api.elevenlabs.io/v1",
+                "capabilities": ["text-to-speech"],
+                "responseMapping": {},
+            },
+        }
+        
+        provider_config = provider_configs.get(provider_id, {
             "name": provider_id,
-            "type": "sdk",
-            "sdkPackage": "fal-client",
+            "type": "api",
             "authMethod": "api-key",
-            "authEnvVar": "FAL_KEY",
             "baseUrl": None,
             "capabilities": [],
             "responseMapping": {},
-        }
+        })
         
         instance = provider_class(provider_config)
         self._provider_instances[provider_id] = instance
@@ -114,7 +133,7 @@ class GenerationService:
         Execute a generation request.
         
         Args:
-            model_id: The model identifier/endpoint (e.g., "fal-ai/veo3.1")
+            model_id: The model identifier/endpoint (e.g., "fal-ai/veo3.1", "elevenlabs/eleven_multilingual_v2")
             params: Generation parameters
             validate: Whether to validate parameters before generation
             
@@ -124,8 +143,22 @@ class GenerationService:
         Raises:
             ValueError: If model is invalid or provider not implemented
         """
+        # Determine provider from model_id
+        provider_id = _get_provider_id_from_endpoint(model_id)
+        
         # Get model configuration from provider.json
         model_config = get_model(model_id)
+        
+        # Handle ElevenLabs models - can be in provider.json or handled dynamically
+        if provider_id == "elevenlabs":
+            # If model is in provider.json, use its config; otherwise use dynamic handling
+            if model_config and model_config.get("is_active", False):
+                # Model is in provider.json - use standard flow
+                pass
+            else:
+                # Fallback: handle ElevenLabs models not in provider.json
+                return await self._generate_elevenlabs(model_id, params)
+        
         if not model_config:
             raise ValueError(f"Unknown model: {model_id}")
         
@@ -149,6 +182,38 @@ class GenerationService:
             raise ValueError(f"Provider not implemented: {provider_id}")
         
         # Execute generation - the provider will handle parameter transformation
+        return await provider.generate(model_id, model_config, params)
+    
+    async def _generate_elevenlabs(
+        self,
+        model_id: str,
+        params: dict[str, Any],
+    ) -> dict[str, Any]:
+        """
+        Handle ElevenLabs generation separately from registry-based models.
+        
+        ElevenLabs models are not stored in provider.json, so we handle them
+        directly with the ElevenLabsProvider.
+        
+        Args:
+            model_id: The model identifier (e.g., "elevenlabs/eleven_multilingual_v2")
+            params: Generation parameters
+            
+        Returns:
+            Normalized generation result
+        """
+        provider = self._get_provider_instance("elevenlabs")
+        if not provider:
+            raise ValueError("ElevenLabs provider not configured")
+        
+        # Create minimal model config for ElevenLabs
+        # The provider handles all the details
+        model_config = {
+            "endpoint": model_id,
+            "type": "text-to-speech",
+            "is_active": True,
+        }
+        
         return await provider.generate(model_id, model_config, params)
     
     async def generate_image(

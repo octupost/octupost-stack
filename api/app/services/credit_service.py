@@ -454,21 +454,69 @@ class CreditService:
         """
         client = supabase_service.client
         if not client:
+            # #region agent log
+            self._debug_log("credit_service.py:no_client", "Supabase client is None", {}, "H5")
+            # #endregion
             return None
         
-        result = client.schema("stripe").rpc(
-            "reserve_credits",
-            {
-                "p_user_id": user_id,
-                "p_estimated_amount": estimated_amount,
-                "p_job_id": job_id,
-                "p_model_id": model_id,
-                "p_buffer_multiplier": BUFFER_MULTIPLIER,
-            }
-        ).execute()
+        # #region agent log
+        self._debug_log("credit_service.py:rpc_call", "Calling stripe.reserve_credits RPC", {
+            "user_id": user_id,
+            "estimated_amount": estimated_amount,
+            "job_id": job_id,
+            "model_id": model_id,
+            "buffer": BUFFER_MULTIPLIER
+        }, "H5")
+        # #endregion
+        
+        try:
+            result = client.schema("stripe").rpc(
+                "reserve_credits",
+                {
+                    "p_user_id": user_id,
+                    "p_estimated_amount": estimated_amount,
+                    "p_job_id": job_id,
+                    "p_model_id": model_id,
+                    "p_buffer_multiplier": BUFFER_MULTIPLIER,
+                }
+            ).execute()
+            
+            # #region agent log
+            self._debug_log("credit_service.py:rpc_success", "RPC call successful", {
+                "result_data": str(result.data)[:100] if result.data else None
+            }, "H5")
+            # #endregion
+        except Exception as rpc_exc:
+            # #region agent log
+            self._debug_log("credit_service.py:rpc_error", "RPC call failed", {
+                "error": str(rpc_exc),
+                "error_type": type(rpc_exc).__name__
+            }, "H5")
+            # #endregion
+            raise
         
         # Returns UUID if successful, null if insufficient credits
         return result.data if result.data else None
+    
+    # #region agent log
+    def _debug_log(self, location: str, message: str, data: dict, hypothesis_id: str = ""):
+        """Write debug log entry to file."""
+        import json
+        from datetime import datetime
+        log_entry = {
+            "location": location,
+            "message": message,
+            "data": data,
+            "timestamp": datetime.now().isoformat(),
+            "sessionId": "debug-session",
+            "hypothesisId": hypothesis_id
+        }
+        try:
+            with open("/Users/serhatcamici/dev/octupost-stack/.cursor/debug.log", "a") as f:
+                f.write(json.dumps(log_entry) + "\n")
+        except Exception:
+            pass
+    # #endregion
 
     async def settle_reservation(
         self,

@@ -176,3 +176,9 @@ def generate_asset_name(
 
     # 5. Final fallback: Type + Date
     return f"{type_label} - {date_str}"
+
+
+
+
+
+

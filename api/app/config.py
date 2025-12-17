@@ -52,6 +52,9 @@ class Settings(BaseSettings):
     # Fal AI Configuration
     fal_key: str = ""
 
+    # ElevenLabs Configuration
+    elevenlabs_api_key: str = ""
+
     # OpenAI Configuration (for Agno agents)
     openai_api_key: str = ""
     
