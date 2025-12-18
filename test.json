@@ -1,1294 +1,414 @@
-[
-  {
-     
-      "input_fields": [
-        {
-          "key": "prompt",
-          "type": "string",
-          "required": true
-        },
-        {
-          "key": "duration",
-          "type": "integer",
-          "accepted_values": {
-            "steps": 1,
-            "max_duration": 30,
-            "min_duration": 2
-          },
-          "required": true
-        },
-        { 
-          "key": "resolution",
-          "type": "string",
-          "accepted_values":  ["720p"],
-          "required": true
-        },
-        { 
-          "key": "aspect_ratio",
-          "type": "string",
-          "accepted_values": ["16:9", "9:16", "1:1"],
-          "required": true
-        },
-        {
-          "key": "negative_prompt",
-          "type": "string",
-          "required": false
-        },
-        {
-          "key": "safety_checker",
-          "type": "boolean",
-          "required": false
-        }
-      ]
-  },
-  {
-    "input_fields": [
-      {
-        "key": "voice",
-        "accepted_values": [
-          "Lovely_Girl",
-          "Decent_Boy",
-          "Imposing_Manner",
-          "Elegant_Man",
-          "Abbess",
-          "Sweet_Girl_2",
-          "Exuberant_Girl",
-          "Wise_Woman",
-          "Friendly_Person",
-          "Inspirational_girl",
-          "Deep_Voice_Man",
-          "Calm_Woman",
-          "Casual_Guy",
-          "Lively_Girl",
-          "Patient_Man",
-          "Young_Knight",
-          "Determined_Man"
-        ]
+{
+    "endpoint_id": "fal-ai/ltx-2/text-to-video",
+    "metadata": {
+      "display_name": "LTX Video 2.0 Pro",
+      "category": "text-to-video",
+      "description": "Create high-fidelity video with audio from text with LTX-2 Pro.",
+      "status": "active",
+      "tags": [],
+      "updated_at": "2025-11-26T22:34:48.934Z",
+      "is_favorited": true,
+      "thumbnail_url": "https://v3b.fal.media/files/b/lion/8KQLQn8JfajzxzHs5KTAp_96322584ff4b4779b10368b8f0ce00bb.jpg",
+      "model_url": "https://fal.run/fal-ai/ltx-2/text-to-video",
+      "license_type": "commercial",
+      "date": "2025-11-26T17:29:02.911Z",
+      "group": {
+        "key": "ltx-2",
+        "label": "Text to Video (Pro)"
       },
-      {
-        "key": "speech_speed",
-        "accepted_values": {
-          "steps": 0.1,
-          "max_speed": 2,
-          "min_speed": 0.5
+      "highlighted": false,
+      "kind": "inference",
+      "pinned": false
+    },
+    "openapi": {
+      "openapi": "3.0.4",
+      "info": {
+        "title": "Queue OpenAPI for fal-ai/ltx-2/text-to-video",
+        "version": "1.0.0",
+        "description": "The OpenAPI schema for the fal-ai/ltx-2/text-to-video queue.",
+        "x-fal-metadata": {
+          "endpointId": "fal-ai/ltx-2/text-to-video",
+          "category": "text-to-video",
+          "thumbnailUrl": "https://v3b.fal.media/files/b/lion/8KQLQn8JfajzxzHs5KTAp_96322584ff4b4779b10368b8f0ce00bb.jpg",
+          "playgroundUrl": "https://fal.ai/models/fal-ai/ltx-2/text-to-video",
+          "documentationUrl": "https://fal.ai/models/fal-ai/ltx-2/text-to-video/api"
         }
       },
-      {
-        "key": "voice_emotions",
-        "accepted_values": [
-          "happy",
-          "sad",
-          "angry",
-          "fearful",
-          "disgusted",
-    ],
-    "required_fields": [
-      "voice"
-    ],
-    "optional_fields": [
-      "speech_speed",
-      "voice_emotions"
-    ]
-  },
-  {
-      "voices": [
-          "Lovely_Girl",
-          "Decent_Boy",
-          "Imposing_Manner",
-          "Elegant_Man",
-          "Abbess",
-          "Sweet_Girl_2",
-          "Exuberant_Girl",
-          "Wise_Woman",
-          "Friendly_Person",
-          "Inspirational_girl",
-          "Deep_Voice_Man",
-          "Calm_Woman",
-          "Casual_Guy",
-          "Lively_Girl",
-          "Patient_Man",
-          "Young_Knight",
-          "Determined_Man"
-      ],
-      "speechSpeed": {
-          "steps": 0.1,
-          "max_speed": 2,
-          "min_speed": 0.5
-      },
-      "voice_emotions": [
-          "happy",
-          "sad",
-          "angry",
-          "fearful",
-          "disgusted",
-          "surprised",
-          "neutral"
-      ]
-  },
-  {
-      "fps": [
-          25,
-          50
-      ],
-      "duration": {
-          "steps": 2,
-          "max_duration": 10,
-          "min_duration": 6
-      },
-      "resolution": [
-          "1080p",
-          "1440p",
-          "2160p"
-      ],
-      "aspect_ratio": [
-          "16:9"
-      ],
-      "custom_fields": [
-          "enable_audio"
-      ]
-  },
-  {
-      "duration": {
-          "steps": 1,
-          "max_duration": 30,
-          "min_duration": 2
-      },
-      "resolution": [
-          "720p"
-      ],
-      "aspect_ratio": [
-          "16:9",
-          "9:16",
-          "1:1"
-      ],
-      "custom_fields": [
-          "negative_prompt",
-          "safety_checker"
-      ]
-  },
-  {
-      "duration": {
-          "steps": 1,
-          "max_duration": 35,
-          "min_duration": 1
-      },
-      "custom_fields": [
-          "negative_prompt"
-      ]
-  },
-  {
-      "input_fields": [
-          {
-              "key": "video_url",
-              "type": "video",
-              "label": "Video File",
-              "required": true
+      "components": {
+        "securitySchemes": {
+          "apiKeyAuth": {
+            "type": "apiKey",
+            "in": "header",
+            "name": "Authorization",
+            "description": "Fal Key"
           }
-      ],
-      "custom_fields": [
-          "background_music_prompt",
-          "asmr_mode"
-      ]
-  },
-  {
-      "duration": {
-          "steps": 2,
-          "max_duration": 8,
-          "min_duration": 4
-      },
-      "resolution": [
-          "720p",
-          "1080p"
-      ],
-      "aspect_ratio": [
-          "16:9",
-          "9:16"
-      ],
-      "custom_fields": [
-          "enhance_prompt",
-          "auto_fix",
-          "enable_audio"
-      ]
-  },
-  {
-      "avatars": [
-          {
-              "name": "Lara (Masterclass)",
-              "thumbnailUrl": {
-                  "16_9": "https://argildotai.s3-accelerate.amazonaws.com/video/00000000-0000-0000-0000-000000000000/models/v2/1fe6292b-9b78-4908-a272-b1f1fe468317/serving-dataset/thumbnails/frame-000001.jpg",
-                  "9_16": "https://argildotai.s3-accelerate.amazonaws.com/video/00000000-0000-0000-0000-000000000000/models/v2/1fe6292b-9b78-4908-a272-b1f1fe468317/serving-dataset/thumbnails/frame-000001.jpg"
+        },
+        "schemas": {
+          "QueueStatus": {
+            "type": "object",
+            "properties": {
+              "status": {
+                "type": "string",
+                "enum": [
+                  "IN_QUEUE",
+                  "IN_PROGRESS",
+                  "COMPLETED"
+                ]
               },
-              "coverImageUrl": {
-                  "16_9": "https://argildotai.s3-accelerate.amazonaws.com/video/00000000-0000-0000-0000-000000000000/models/v2/1fe6292b-9b78-4908-a272-b1f1fe468317/serving-dataset/placeholders/frame-000001.jpg",
-                  "9_16": "https://argildotai.s3-accelerate.amazonaws.com/video/00000000-0000-0000-0000-000000000000/models/v2/1fe6292b-9b78-4908-a272-b1f1fe468317/serving-dataset/placeholders/frame-000001.jpg"
-              }
-          },
-          {
-              "name": "Maria (Masterclass)",
-              "thumbnailUrl": {
-                  "16_9": "https://argildotai.s3-accelerate.amazonaws.com/video/00000000-0000-0000-0000-000000000000/models/v2/3b76baa6-14ea-40e2-bffd-41f7464ca7d1/serving-dataset/thumbnails/frame-000120.jpg",
-                  "9_16": "https://argildotai.s3-accelerate.amazonaws.com/video/00000000-0000-0000-0000-000000000000/models/v2/3b76baa6-14ea-40e2-bffd-41f7464ca7d1/serving-dataset/thumbnails/frame-000120.jpg"
+              "request_id": {
+                "type": "string",
+                "description": "The request id."
               },
-              "coverImageUrl": {
-                  "16_9": "https://argildotai.s3-accelerate.amazonaws.com/video/00000000-0000-0000-0000-000000000000/models/v2/3b76baa6-14ea-40e2-bffd-41f7464ca7d1/serving-dataset/placeholders/frame-000120.jpg",
-                  "9_16": "https://argildotai.s3-accelerate.amazonaws.com/video/00000000-0000-0000-0000-000000000000/models/v2/3b76baa6-14ea-40e2-bffd-41f7464ca7d1/serving-dataset/placeholders/frame-000120.jpg"
-              }
-          },
-          {
-              "name": "Sienna (Masterclass)",
-              "thumbnailUrl": {
-                  "16_9": "https://argildotai.s3-accelerate.amazonaws.com/video/00000000-0000-0000-0000-000000000000/models/v2/63e92ef4-3295-4a11-9c71-e6088835e4fc/serving-dataset/thumbnails/frame-000061.jpg",
-                  "9_16": "https://argildotai.s3-accelerate.amazonaws.com/video/00000000-0000-0000-0000-000000000000/models/v2/63e92ef4-3295-4a11-9c71-e6088835e4fc/serving-dataset/thumbnails/frame-000061.jpg"
+              "response_url": {
+                "type": "string",
+                "description": "The response url."
               },
-              "coverImageUrl": {
-                  "16_9": "https://argildotai.s3-accelerate.amazonaws.com/video/00000000-0000-0000-0000-000000000000/models/v2/63e92ef4-3295-4a11-9c71-e6088835e4fc/serving-dataset/placeholders/frame-000061.jpg",
-                  "9_16": "https://argildotai.s3-accelerate.amazonaws.com/video/00000000-0000-0000-0000-000000000000/models/v2/63e92ef4-3295-4a11-9c71-e6088835e4fc/serving-dataset/placeholders/frame-000061.jpg"
-              }
-          },
-          {
-              "name": "Jasmine (Masterclass)",
-              "thumbnailUrl": {
-                  "16_9": "https://argildotai.s3-accelerate.amazonaws.com/video/00000000-0000-0000-0000-000000000000/models/v2/5788ef30-7e2c-46e3-b39c-73f45d0ed842/serving-dataset/thumbnails/frame-000057.jpg",
-                  "9_16": "https://argildotai.s3-accelerate.amazonaws.com/video/00000000-0000-0000-0000-000000000000/models/v2/5788ef30-7e2c-46e3-b39c-73f45d0ed842/serving-dataset/thumbnails/frame-000057.jpg"
+              "status_url": {
+                "type": "string",
+                "description": "The status url."
               },
-              "coverImageUrl": {
-                  "16_9": "https://argildotai.s3-accelerate.amazonaws.com/video/00000000-0000-0000-0000-000000000000/models/v2/5788ef30-7e2c-46e3-b39c-73f45d0ed842/serving-dataset/placeholders/frame-000057.jpg",
-                  "9_16": "https://argildotai.s3-accelerate.amazonaws.com/video/00000000-0000-0000-0000-000000000000/models/v2/5788ef30-7e2c-46e3-b39c-73f45d0ed842/serving-dataset/placeholders/frame-000057.jpg"
-              }
-          },
-          {
-              "name": "Amara (Masterclass)",
-              "thumbnailUrl": {
-                  "16_9": "https://argildotai.s3-accelerate.amazonaws.com/video/00000000-0000-0000-0000-000000000000/models/v2/fe10a326-b246-4181-b150-7decc0ab0fa7/serving-dataset/thumbnails/frame-000120.jpg",
-                  "9_16": "https://argildotai.s3-accelerate.amazonaws.com/video/00000000-0000-0000-0000-000000000000/models/v2/fe10a326-b246-4181-b150-7decc0ab0fa7/serving-dataset/thumbnails/frame-000120.jpg"
+              "cancel_url": {
+                "type": "string",
+                "description": "The cancel url."
               },
-              "coverImageUrl": {
-                  "16_9": "https://argildotai.s3-accelerate.amazonaws.com/video/00000000-0000-0000-0000-000000000000/models/v2/fe10a326-b246-4181-b150-7decc0ab0fa7/serving-dataset/placeholders/frame-000120.jpg",
-                  "9_16": "https://argildotai.s3-accelerate.amazonaws.com/video/00000000-0000-0000-0000-000000000000/models/v2/fe10a326-b246-4181-b150-7decc0ab0fa7/serving-dataset/placeholders/frame-000120.jpg"
-              }
-          },
-          {
-              "name": "Tyler (Masterclass)",
-              "thumbnailUrl": {
-                  "16_9": "https://argildotai.s3-accelerate.amazonaws.com/video/00000000-0000-0000-0000-000000000000/models/v2/69325563-48d1-447a-b97a-1fe5218e0e72/serving-dataset/thumbnails/frame-000120.jpg",
-                  "9_16": "https://argildotai.s3-accelerate.amazonaws.com/video/00000000-0000-0000-0000-000000000000/models/v2/69325563-48d1-447a-b97a-1fe5218e0e72/serving-dataset/thumbnails/frame-000120.jpg"
+              "logs": {
+                "type": "object",
+                "description": "The logs.",
+                "additionalProperties": true
               },
-              "coverImageUrl": {
-                  "16_9": "https://argildotai.s3-accelerate.amazonaws.com/video/00000000-0000-0000-0000-000000000000/models/v2/69325563-48d1-447a-b97a-1fe5218e0e72/serving-dataset/placeholders/frame-000120.jpg",
-                  "9_16": "https://argildotai.s3-accelerate.amazonaws.com/video/00000000-0000-0000-0000-000000000000/models/v2/69325563-48d1-447a-b97a-1fe5218e0e72/serving-dataset/placeholders/frame-000120.jpg"
-              }
-          },
-          {
-              "name": "Jayse (Masterclass)",
-              "thumbnailUrl": {
-                  "16_9": "https://argildotai.s3-accelerate.amazonaws.com/video/00000000-0000-0000-0000-000000000000/models/v2/c27cb699-58bd-4a73-a392-16d72bd224b4/serving-dataset/thumbnails/frame-000030.jpg",
-                  "9_16": "https://argildotai.s3-accelerate.amazonaws.com/video/00000000-0000-0000-0000-000000000000/models/v2/c27cb699-58bd-4a73-a392-16d72bd224b4/serving-dataset/thumbnails/frame-000030.jpg"
+              "metrics": {
+                "type": "object",
+                "description": "The metrics.",
+                "additionalProperties": true
               },
-              "coverImageUrl": {
-                  "16_9": "https://argildotai.s3-accelerate.amazonaws.com/video/00000000-0000-0000-0000-000000000000/models/v2/c27cb699-58bd-4a73-a392-16d72bd224b4/serving-dataset/placeholders/frame-000030.jpg",
-                  "9_16": "https://argildotai.s3-accelerate.amazonaws.com/video/00000000-0000-0000-0000-000000000000/models/v2/c27cb699-58bd-4a73-a392-16d72bd224b4/serving-dataset/placeholders/frame-000030.jpg"
+              "queue_position": {
+                "type": "integer",
+                "description": "The queue position."
               }
+            },
+            "required": [
+              "status",
+              "request_id"
+            ]
           },
-          {
-              "name": "Paul (Masterclass)",
-              "thumbnailUrl": {
-                  "16_9": "https://argildotai.s3-accelerate.amazonaws.com/video/00000000-0000-0000-0000-000000000000/models/v2/4d3a8e4f-fe81-4b7c-89e4-6bdfb8c6bf9d/serving-dataset/thumbnails/frame-000120.jpg",
-                  "9_16": "https://argildotai.s3-accelerate.amazonaws.com/video/00000000-0000-0000-0000-000000000000/models/v2/4d3a8e4f-fe81-4b7c-89e4-6bdfb8c6bf9d/serving-dataset/thumbnails/frame-000120.jpg"
+          "Ltx2TextToVideoInput": {
+            "title": "LTXVTextToVideoRequest",
+            "type": "object",
+            "properties": {
+              "prompt": {
+                "examples": [
+                  "A cowboy walking through a dusty town at high noon, camera following from behind, cinematic depth, realistic lighting, western mood, 4K film grain."
+                ],
+                "description": "The prompt to generate the video from",
+                "minLength": 1,
+                "type": "string",
+                "maxLength": 5000,
+                "title": "Prompt"
               },
-              "coverImageUrl": {
-                  "16_9": "https://argildotai.s3-accelerate.amazonaws.com/video/00000000-0000-0000-0000-000000000000/models/v2/4d3a8e4f-fe81-4b7c-89e4-6bdfb8c6bf9d/serving-dataset/placeholders/frame-000120.jpg",
-                  "9_16": "https://argildotai.s3-accelerate.amazonaws.com/video/00000000-0000-0000-0000-000000000000/models/v2/4d3a8e4f-fe81-4b7c-89e4-6bdfb8c6bf9d/serving-dataset/placeholders/frame-000120.jpg"
-              }
-          },
-          {
-              "name": "Viva (Masterclass)",
-              "thumbnailUrl": {
-                  "16_9": "https://argildotai.s3-accelerate.amazonaws.com/video/00000000-0000-0000-0000-000000000000/models/v2/96db139f-5a40-4824-ac9f-0e98952e07c7/serving-dataset/thumbnails/frame-000120.jpg",
-                  "9_16": "https://argildotai.s3-accelerate.amazonaws.com/video/00000000-0000-0000-0000-000000000000/models/v2/96db139f-5a40-4824-ac9f-0e98952e07c7/serving-dataset/thumbnails/frame-000120.jpg"
+              "aspect_ratio": {
+                "enum": [
+                  "16:9"
+                ],
+                "description": "The aspect ratio of the generated video",
+                "type": "string",
+                "title": "Aspect Ratio",
+                "default": "16:9"
               },
-              "coverImageUrl": {
-                  "16_9": "https://argildotai.s3-accelerate.amazonaws.com/video/00000000-0000-0000-0000-000000000000/models/v2/96db139f-5a40-4824-ac9f-0e98952e07c7/serving-dataset/placeholders/frame-000120.jpg",
-                  "9_16": "https://argildotai.s3-accelerate.amazonaws.com/video/00000000-0000-0000-0000-000000000000/models/v2/96db139f-5a40-4824-ac9f-0e98952e07c7/serving-dataset/placeholders/frame-000120.jpg"
-              }
-          },
-          {
-              "name": "Alex (Masterclass)",
-              "thumbnailUrl": {
-                  "16_9": "https://argildotai.s3-accelerate.amazonaws.com/video/00000000-0000-0000-0000-000000000000/models/v2/d2629d75-36a2-4c1e-8ebe-f0b448e114aa/serving-dataset/thumbnails/frame-000030.jpg",
-                  "9_16": "https://argildotai.s3-accelerate.amazonaws.com/video/00000000-0000-0000-0000-000000000000/models/v2/d2629d75-36a2-4c1e-8ebe-f0b448e114aa/serving-dataset/thumbnails/frame-000030.jpg"
+              "duration": {
+                "enum": [
+                  6,
+                  8,
+                  10
+                ],
+                "description": "The duration of the generated video in seconds",
+                "type": "integer",
+                "title": "Duration",
+                "default": 6
               },
-              "coverImageUrl": {
-                  "16_9": "https://argildotai.s3-accelerate.amazonaws.com/video/00000000-0000-0000-0000-000000000000/models/v2/d2629d75-36a2-4c1e-8ebe-f0b448e114aa/serving-dataset/placeholders/frame-000030.jpg",
-                  "9_16": "https://argildotai.s3-accelerate.amazonaws.com/video/00000000-0000-0000-0000-000000000000/models/v2/d2629d75-36a2-4c1e-8ebe-f0b448e114aa/serving-dataset/placeholders/frame-000030.jpg"
-              }
-          },
-          {
-              "name": "Byron (Masterclass)",
-              "thumbnailUrl": {
-                  "16_9": "https://argildotai.s3-accelerate.amazonaws.com/video/00000000-0000-0000-0000-000000000000/models/v2/4603b780-89a0-4147-9b72-8c961a974c9e/serving-dataset/thumbnails/frame-000120.jpg",
-                  "9_16": "https://argildotai.s3-accelerate.amazonaws.com/video/00000000-0000-0000-0000-000000000000/models/v2/4603b780-89a0-4147-9b72-8c961a974c9e/serving-dataset/thumbnails/frame-000120.jpg"
+              "generate_audio": {
+                "description": "Whether to generate audio for the generated video",
+                "type": "boolean",
+                "title": "Generate Audio",
+                "default": true
               },
-              "coverImageUrl": {
-                  "16_9": "https://argildotai.s3-accelerate.amazonaws.com/video/00000000-0000-0000-0000-000000000000/models/v2/4603b780-89a0-4147-9b72-8c961a974c9e/serving-dataset/placeholders/frame-000120.jpg",
-                  "9_16": "https://argildotai.s3-accelerate.amazonaws.com/video/00000000-0000-0000-0000-000000000000/models/v2/4603b780-89a0-4147-9b72-8c961a974c9e/serving-dataset/placeholders/frame-000120.jpg"
-              }
-          },
-          {
-              "name": "Calista (Masterclass)",
-              "thumbnailUrl": {
-                  "16_9": "https://argildotai.s3-accelerate.amazonaws.com/video/00000000-0000-0000-0000-000000000000/models/v2/46ce22c2-641a-4e33-9c48-2f1d4d5d2734/serving-dataset/thumbnails/frame-000321.jpg",
-                  "9_16": "https://argildotai.s3-accelerate.amazonaws.com/video/00000000-0000-0000-0000-000000000000/models/v2/46ce22c2-641a-4e33-9c48-2f1d4d5d2734/serving-dataset/thumbnails/frame-000321.jpg"
+              "resolution": {
+                "enum": [
+                  "1080p",
+                  "1440p",
+                  "2160p"
+                ],
+                "description": "The resolution of the generated video",
+                "type": "string",
+                "title": "Resolution",
+                "default": "1080p"
               },
-              "coverImageUrl": {
-                  "16_9": "https://argildotai.s3-accelerate.amazonaws.com/video/00000000-0000-0000-0000-000000000000/models/v2/46ce22c2-641a-4e33-9c48-2f1d4d5d2734/serving-dataset/placeholders/frame-000321.jpg",
-                  "9_16": "https://argildotai.s3-accelerate.amazonaws.com/video/00000000-0000-0000-0000-000000000000/models/v2/46ce22c2-641a-4e33-9c48-2f1d4d5d2734/serving-dataset/placeholders/frame-000321.jpg"
+              "fps": {
+                "enum": [
+                  25,
+                  50
+                ],
+                "description": "The frames per second of the generated video",
+                "type": "integer",
+                "title": "Frames per Second",
+                "default": 25
               }
+            },
+            "x-fal-order-properties": [
+              "prompt",
+              "duration",
+              "resolution",
+              "aspect_ratio",
+              "fps",
+              "generate_audio"
+            ],
+            "required": [
+              "prompt"
+            ]
           },
-          {
-              "name": "Fabien (Masterclass)",
-              "thumbnailUrl": {
-                  "16_9": "https://argildotai.s3-accelerate.amazonaws.com/video/00000000-0000-0000-0000-000000000000/models/v2/257286e7-eb4e-4f50-bea0-e292d719e4aa/serving-dataset/thumbnails/frame-000120.jpg",
-                  "9_16": "https://argildotai.s3-accelerate.amazonaws.com/video/00000000-0000-0000-0000-000000000000/models/v2/257286e7-eb4e-4f50-bea0-e292d719e4aa/serving-dataset/thumbnails/frame-000120.jpg"
+          "Ltx2TextToVideoOutput": {
+            "title": "LTXVTextToVideoResponse",
+            "type": "object",
+            "properties": {
+              "video": {
+                "examples": [
+                  {
+                    "file_name": "ltxv-2-t2v-output.mp4",
+                    "content_type": "video/mp4",
+                    "url": "https://storage.googleapis.com/falserverless/example_outputs/ltxv-2-t2v-output.mp4"
+                  }
+                ],
+                "description": "The generated video file",
+                "title": "Video",
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/VideoFile"
+                  }
+                ]
+              }
+            },
+            "x-fal-order-properties": [
+              "video"
+            ],
+            "required": [
+              "video"
+            ]
+          },
+          "VideoFile": {
+            "title": "VideoFile",
+            "type": "object",
+            "properties": {
+              "file_size": {
+                "examples": [
+                  4404019
+                ],
+                "description": "The size of the file in bytes.",
+                "type": "integer",
+                "title": "File Size"
               },
-              "coverImageUrl": {
-                  "16_9": "https://argildotai.s3-accelerate.amazonaws.com/video/00000000-0000-0000-0000-000000000000/models/v2/257286e7-eb4e-4f50-bea0-e292d719e4aa/serving-dataset/placeholders/frame-000120.jpg",
-                  "9_16": "https://argildotai.s3-accelerate.amazonaws.com/video/00000000-0000-0000-0000-000000000000/models/v2/257286e7-eb4e-4f50-bea0-e292d719e4aa/serving-dataset/placeholders/frame-000120.jpg"
-              }
-          },
-          {
-              "name": "Laurent (UGC)",
-              "thumbnailUrl": {
-                  "16_9": "https://argildotai.s3-accelerate.amazonaws.com/video/00000000-0000-0000-0000-000000000000/models/v2/3a504401-25d1-4e60-9b05-f10e84b46bd8/serving-dataset/thumbnails/frame-000120.jpg",
-                  "9_16": "https://argildotai.s3-accelerate.amazonaws.com/video/00000000-0000-0000-0000-000000000000/models/v2/3a504401-25d1-4e60-9b05-f10e84b46bd8/serving-dataset/thumbnails/frame-000120.jpg"
+              "duration": {
+                "description": "The duration of the video",
+                "type": "number",
+                "title": "Duration"
               },
-              "coverImageUrl": {
-                  "16_9": "https://argildotai.s3-accelerate.amazonaws.com/video/00000000-0000-0000-0000-000000000000/models/v2/3a504401-25d1-4e60-9b05-f10e84b46bd8/serving-dataset/placeholders/frame-000120.jpg",
-                  "9_16": "https://argildotai.s3-accelerate.amazonaws.com/video/00000000-0000-0000-0000-000000000000/models/v2/3a504401-25d1-4e60-9b05-f10e84b46bd8/serving-dataset/placeholders/frame-000120.jpg"
-              }
-          },
-          {
-              "name": "Noemie car (UGC)",
-              "thumbnailUrl": {
-                  "16_9": "https://argildotai.s3-accelerate.amazonaws.com/video/00000000-0000-0000-0000-000000000000/models/v2/eecb0a26-bebd-43cb-a5fa-c7da82064561/serving-dataset/thumbnails/frame-000120.jpg",
-                  "9_16": "https://argildotai.s3-accelerate.amazonaws.com/video/00000000-0000-0000-0000-000000000000/models/v2/eecb0a26-bebd-43cb-a5fa-c7da82064561/serving-dataset/thumbnails/frame-000120.jpg"
+              "height": {
+                "description": "The height of the video",
+                "type": "integer",
+                "title": "Height"
               },
-              "coverImageUrl": {
-                  "16_9": "https://argildotai.s3-accelerate.amazonaws.com/video/00000000-0000-0000-0000-000000000000/models/v2/eecb0a26-bebd-43cb-a5fa-c7da82064561/serving-dataset/placeholders/frame-000120.jpg",
-                  "9_16": "https://argildotai.s3-accelerate.amazonaws.com/video/00000000-0000-0000-0000-000000000000/models/v2/eecb0a26-bebd-43cb-a5fa-c7da82064561/serving-dataset/placeholders/frame-000120.jpg"
+              "url": {
+                "description": "The URL where the file can be downloaded from.",
+                "type": "string",
+                "title": "Url"
+              },
+              "fps": {
+                "description": "The FPS of the video",
+                "type": "number",
+                "title": "Fps"
+              },
+              "width": {
+                "description": "The width of the video",
+                "type": "integer",
+                "title": "Width"
+              },
+              "file_name": {
+                "examples": [
+                  "z9RV14K95DvU.png"
+                ],
+                "description": "The name of the file. It will be auto-generated if not provided.",
+                "type": "string",
+                "title": "File Name"
+              },
+              "num_frames": {
+                "description": "The number of frames in the video",
+                "type": "integer",
+                "title": "Num Frames"
+              },
+              "content_type": {
+                "examples": [
+                  "image/png"
+                ],
+                "description": "The mime type of the file.",
+                "type": "string",
+                "title": "Content Type"
+              },
+              "file_data": {
+                "format": "binary",
+                "description": "File data",
+                "type": "string",
+                "title": "File Data"
               }
+            },
+            "x-fal-order-properties": [
+              "url",
+              "content_type",
+              "file_name",
+              "file_size",
+              "file_data",
+              "width",
+              "height",
+              "fps",
+              "duration",
+              "num_frames"
+            ],
+            "required": [
+              "url"
+            ]
           }
-      ],
-      "custom_fields": [
-          "transparent_background"
-      ],
-      "field_mapping": {
-          "transparent_background": "remove_background"
-      }
-  },
-  {
-      "duration": {
-          "steps": 1,
-          "max_duration": 30,
-          "min_duration": 2
+        }
       },
-      "resolution": [
-          "720p"
-      ],
-      "aspect_ratio": [
-          "16:9",
-          "9:16",
-          "1:1"
-      ],
-      "custom_fields": [
-          "negative_prompt",
-          "safety_checker"
-      ]
-  },
-  {
-      "duration": {
-          "steps": 1,
-          "max_duration": 30,
-          "min_duration": 1
-      },
-      "input_fields": [
-          {
-              "key": "video_url",
-              "type": "video",
-              "label": "Video File",
-              "required": true
+      "paths": {
+        "/fal-ai/ltx-2/text-to-video/requests/{request_id}/status": {
+          "get": {
+            "parameters": [
+              {
+                "name": "request_id",
+                "in": "path",
+                "required": true,
+                "schema": {
+                  "type": "string",
+                  "description": "Request ID"
+                }
+              },
+              {
+                "name": "logs",
+                "in": "query",
+                "required": false,
+                "schema": {
+                  "type": "number",
+                  "description": "Whether to include logs (`1`) in the response or not (`0`)."
+                }
+              }
+            ],
+            "responses": {
+              "200": {
+                "description": "The request status.",
+                "content": {
+                  "application/json": {
+                    "schema": {
+                      "$ref": "#/components/schemas/QueueStatus"
+                    }
+                  }
+                }
+              }
+            }
           }
-      ]
-  },
-  {
-      "duration": {
-          "steps": 1,
-          "max_duration": 150,
-          "min_duration": 1
-      },
-      "custom_fields": [
-          "negative_prompt"
-      ]
-  },
-  {
-      "background": [
-          "auto",
-          "transparent",
-          "opaque"
-      ],
-      "resolution": [
-          "auto",
-          "low",
-          "medium",
-          "high"
-      ],
-      "aspect_ratio": [
-          "auto",
-          "1024x1024",
-          "1024x1536",
-          "1536x1024"
-      ]
-  },
-  {
-      "duration": {
-          "steps": 1,
-          "max_duration": 10,
-          "min_duration": 1
-      },
-      "input_fields": [
-          {
-              "key": "video_url",
-              "type": "video",
-              "label": "Video File",
-              "required": true
+        },
+        "/fal-ai/ltx-2/text-to-video/requests/{request_id}/cancel": {
+          "put": {
+            "parameters": [
+              {
+                "name": "request_id",
+                "in": "path",
+                "required": true,
+                "schema": {
+                  "type": "string",
+                  "description": "Request ID"
+                }
+              }
+            ],
+            "responses": {
+              "200": {
+                "description": "The request was cancelled.",
+                "content": {
+                  "application/json": {
+                    "schema": {
+                      "type": "object",
+                      "properties": {
+                        "success": {
+                          "type": "boolean",
+                          "description": "Whether the request was cancelled successfully."
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
           }
-      ]
-  },
-  {
-      "duration": {
-          "steps": 4,
-          "max_duration": 10,
-          "min_duration": 6
-      },
-      "resolution": [
-          "768p"
-      ],
-      "value_types": {
-          "duration": "string"
-      },
-      "aspect_ratio": [
-          "16:9"
-      ],
-      "custom_fields": [
-          "enhance_prompt"
-      ],
-      "field_mapping": {
-          "enhance_prompt": "prompt_optimizer"
-      }
-  },
-  {
-      "duration": {
-          "steps": 5,
-          "max_duration": 10,
-          "min_duration": 5
-      },
-      "resolution": [
-          "1080p"
-      ],
-      "aspect_ratio": [
-          "1:1",
-          "16:9",
-          "9:16"
-      ],
-      "input_fields": [
-          {
-              "key": "image_url",
-              "type": "image",
-              "label": "Input Image",
-              "required": true
+        },
+        "/fal-ai/ltx-2/text-to-video": {
+          "post": {
+            "requestBody": {
+              "required": true,
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "$ref": "#/components/schemas/Ltx2TextToVideoInput"
+                  }
+                }
+              }
+            },
+            "responses": {
+              "200": {
+                "description": "The request status.",
+                "content": {
+                  "application/json": {
+                    "schema": {
+                      "$ref": "#/components/schemas/QueueStatus"
+                    }
+                  }
+                }
+              }
+            }
           }
-      ],
-      "custom_fields": [
-          "negative_prompt",
-          "enable_audio"
-      ]
-  },
-  {
-      "duration": {
-          "steps": 2,
-          "max_duration": 8,
-          "min_duration": 4
-      },
-      "resolution": [
-          "720p",
-          "1080p"
-      ],
-      "aspect_ratio": [
-          "auto",
-          "16:9",
-          "9:16"
-      ],
-      "input_fields": [
-          {
-              "key": "image_url",
-              "type": "image",
-              "label": "Input Image",
-              "required": true
+        },
+        "/fal-ai/ltx-2/text-to-video/requests/{request_id}": {
+          "get": {
+            "parameters": [
+              {
+                "name": "request_id",
+                "in": "path",
+                "required": true,
+                "schema": {
+                  "type": "string",
+                  "description": "Request ID"
+                }
+              }
+            ],
+            "responses": {
+              "200": {
+                "description": "Result of the request.",
+                "content": {
+                  "application/json": {
+                    "schema": {
+                      "$ref": "#/components/schemas/Ltx2TextToVideoOutput"
+                    }
+                  }
+                }
+              }
+            }
           }
-      ],
-      "custom_fields": [
-          "enhance_prompt",
-          "auto_fix",
-          "enable_audio"
-      ]
-  },
-  {
-      "duration": {
-          "steps": 4,
-          "max_duration": 12,
-          "min_duration": 4
+        }
       },
-      "resolution": [
-          "720p",
-          "1080p"
+      "servers": [
+        {
+          "url": "https://queue.fal.run"
+        }
       ],
-      "aspect_ratio": [
-          "16:9",
-          "9:16"
+      "security": [
+        {
+          "apiKeyAuth": []
+        }
       ]
-  },
-  {
-      "fps": [
-          25,
-          50
-      ],
-      "duration": {
-          "steps": 2,
-          "max_duration": 20,
-          "min_duration": 6
-      },
-      "resolution": [
-          "1080p",
-          "1440p",
-          "2160p"
-      ],
-      "aspect_ratio": [
-          "16:9"
-      ],
-      "custom_fields": [
-          "enable_audio"
-      ]
-  },
-  {
-      "fps": [
-          25,
-          50
-      ],
-      "duration": {
-          "steps": 2,
-          "max_duration": 20,
-          "min_duration": 6
-      },
-      "resolution": [
-          "1080p",
-          "1440p",
-          "2160p"
-      ],
-      "value_types": {
-          "fps": "integer",
-          "duration": "integer"
-      },
-      "aspect_ratio": [
-          "16:9"
-      ],
-      "input_fields": [
-          {
-              "key": "image_url",
-              "type": "image",
-              "label": "Input Image",
-              "required": true
-          }
-      ],
-      "custom_fields": [
-          "enable_audio"
-      ]
-  },
-  {
-      "duration": {
-          "steps": 5,
-          "max_duration": 10,
-          "min_duration": 5
-      },
-      "resolution": [
-          "1080p"
-      ],
-      "aspect_ratio": [
-          "1:1",
-          "16:9",
-          "9:16"
-      ],
-      "input_fields": [
-          {
-              "key": "elements[0].frontal_image_url",
-              "type": "image",
-              "label": "Main Character Front View",
-              "required": true
-          },
-          {
-              "key": "elements[0].reference_image_urls",
-              "type": "image_array",
-              "label": "Main Character Other Angles",
-              "required": false
-          },
-          {
-              "key": "elements[1].frontal_image_url",
-              "type": "image",
-              "label": "Second Character Front View",
-              "required": false
-          },
-          {
-              "key": "elements[1].reference_image_urls",
-              "type": "image_array",
-              "label": "Second Character Other Angles",
-              "required": false
-          },
-          {
-              "key": "image_urls[0]",
-              "type": "image",
-              "label": "Style/Look Reference",
-              "required": false
-          },
-          {
-              "key": "image_urls[1]",
-              "type": "image",
-              "label": "Background/Environment",
-              "required": false
-          }
-      ],
-      "custom_fields": [
-          "main_character_object_front_view",
-          "main_character_object_other_angles",
-          "second_character_object_front_view",
-          "second_character_object_other_angles",
-          "style_and_look_reference",
-          "background_environment_reference",
-          "starting_frame_optional"
-      ]
-  },
-  {
-      "input_fields": [
-          {
-              "key": "video_url",
-              "type": "video",
-              "label": "Source Video",
-              "required": true
-          }
-      ]
-  },
-  {
-      "duration": {
-          "steps": 1,
-          "max_duration": 190,
-          "min_duration": 1
-      }
-  },
-  {
-      "duration": {
-          "steps": 0,
-          "max_duration": 8,
-          "min_duration": 8
-      },
-      "resolution": [
-          "720p",
-          "1080p"
-      ],
-      "aspect_ratio": [
-          "16:9"
-      ],
-      "input_fields": [
-          {
-              "key": "image_urls[0]",
-              "type": "image",
-              "label": "Reference Image 1",
-              "required": true
-          },
-          {
-              "key": "image_urls[1]",
-              "type": "image",
-              "label": "Reference Image 2",
-              "required": false
-          },
-          {
-              "key": "image_urls[2]",
-              "type": "image",
-              "label": "Reference Image 3",
-              "required": false
-          }
-      ],
-      "custom_fields": [
-          "enhance_prompt",
-          "auto_fix",
-          "enable_audio"
-      ]
-  },
-  {
-      "input_fields": [
-          {
-              "key": "image_url",
-              "type": "image",
-              "label": "Avatar Image",
-              "required": true
-          },
-          {
-              "key": "audio_url",
-              "type": "audio",
-              "label": "Audio File",
-              "required": true
-          }
-      ],
-      "custom_fields": [
-          "audio_input",
-          "avatar_image_input"
-      ]
-  },
-  {
-      "duration": {
-          "steps": 4,
-          "max_duration": 12,
-          "min_duration": 4
-      },
-      "resolution": [
-          "720p",
-          "1080p"
-      ],
-      "aspect_ratio": [
-          "16:9",
-          "9:16",
-          "auto"
-      ],
-      "input_fields": [
-          {
-              "key": "image_url",
-              "type": "image",
-              "label": "Input Image",
-              "required": true
-          }
-      ]
-  },
-  {
-      "voices": [
-          "genshin_vindi2",
-          "zhinen_xuesheng",
-          "AOT",
-          "ai_shatang",
-          "genshin_klee2",
-          "genshin_kirara",
-          "ai_kaiya",
-          "oversea_male1",
-          "ai_chenjiahao_712",
-          "girlfriend_4_speech02",
-          "chat1_female_new-3",
-          "chat_0407_5-1",
-          "cartoon-boy-07",
-          "uk_boy1",
-          "cartoon-girl-01",
-          "PeppaPig_platform",
-          "ai_huangzhong_712",
-          "ai_huangyaoshi_712",
-          "ai_laoguowang_712",
-          "chengshu_jiejie",
-          "you_pingjing",
-          "calm_story1",
-          "uk_man2",
-          "laopopo_speech02",
-          "heainainai_speech02",
-          "reader_en_m-v1",
-          "commercial_lady_en_f-v1",
-          "tiyuxi_xuedi",
-          "tiexin_nanyou",
-          "girlfriend_1_speech02",
-          "girlfriend_2_speech02",
-          "zhuxi_speech02",
-          "uk_oldman3",
-          "dongbeilaotie_speech02",
-          "chongqingxiaohuo_speech02",
-          "chuanmeizi_speech02",
-          "chaoshandashu_speech02",
-          "ai_taiwan_man2_speech02",
-          "xianzhanggui_speech02",
-          "tianjinjiejie_speech02",
-          "diyinnansang_DB_CN_M_04-v2",
-          "yizhipiannan-v1",
-          "guanxiaofang-v2",
-          "tianmeixuemei-v1",
-          "daopianyansang-v1",
-          "mengwa-v1"
-      ],
-      "speechSpeed": {
-          "steps": 0.1,
-          "max_speed": 2,
-          "min_speed": 0.8
-      },
-      "value_types": {
-          "voice_speed": "float"
-      }
-  },
-  {
-      "duration": {
-          "steps": 4,
-          "max_duration": 12,
-          "min_duration": 4
-      },
-      "resolution": [
-          "720p"
-      ],
-      "aspect_ratio": [
-          "16:9",
-          "9:16",
-          "auto"
-      ],
-      "input_fields": [
-          {
-              "key": "image_url",
-              "type": "image",
-              "label": "Input Image",
-              "required": true
-          }
-      ]
-  },
-  {
-      "duration": {
-          "steps": 5,
-          "max_duration": 10,
-          "min_duration": 5
-      },
-      "resolution": [
-          "1080p"
-      ],
-      "aspect_ratio": [
-          "1:1",
-          "16:9",
-          "9:16"
-      ],
-      "custom_fields": [
-          "negative_prompt",
-          "enable_audio"
-      ]
-  },
-  {
-      "duration": {
-          "steps": 4,
-          "max_duration": 10,
-          "min_duration": 6
-      },
-      "resolution": [
-          "768p"
-      ],
-      "aspect_ratio": [
-          "16:9"
-      ],
-      "input_fields": [
-          {
-              "key": "image_url",
-              "type": "image",
-              "label": "Input Image",
-              "required": true
-          }
-      ],
-      "custom_fields": [
-          "enhance_prompt"
-      ]
-  },
-  {
-      "duration": {
-          "steps": 1,
-          "max_duration": 20,
-          "min_duration": 2
-      },
-      "retake_mode": [
-          "replace_audio",
-          "replace_video",
-          "replace_audio_and_video"
-      ],
-      "aspect_ratio": [
-          "16:9"
-      ],
-      "input_fields": [
-          {
-              "key": "video_url",
-              "type": "video",
-              "label": "Source Video",
-              "required": true
-          }
-      ]
-  },
-  {
-      "voices": [
-          "Lovely_Girl",
-          "Decent_Boy",
-          "Imposing_Manner",
-          "Elegant_Man",
-          "Abbess",
-          "Sweet_Girl_2",
-          "Exuberant_Girl",
-          "Wise_Woman",
-          "Friendly_Person",
-          "Inspirational_girl",
-          "Deep_Voice_Man",
-          "Calm_Woman",
-          "Casual_Guy",
-          "Lively_Girl",
-          "Patient_Man",
-          "Young_Knight",
-          "Determined_Man"
-      ],
-      "speechSpeed": {
-          "steps": 0.1,
-          "max_speed": 2,
-          "min_speed": 0.5
-      },
-      "voice_emotions": [
-          "happy",
-          "sad",
-          "angry",
-          "fearful",
-          "disgusted",
-          "surprised",
-          "neutral"
-      ]
-  },
-  {
-      "fps": [
-          25,
-          50
-      ],
-      "duration": {
-          "steps": 2,
-          "max_duration": 20,
-          "min_duration": 6
-      },
-      "resolution": [
-          "1080p",
-          "1440p",
-          "2160p"
-      ],
-      "aspect_ratio": [
-          "16:9"
-      ],
-      "input_fields": [
-          {
-              "key": "image_url",
-              "type": "image",
-              "label": "Input Image",
-              "required": true
-          }
-      ],
-      "custom_fields": [
-          "enable_audio"
-      ]
-  },
-  {
-      "duration": {
-          "steps": 1,
-          "max_duration": 30,
-          "min_duration": 2
-      },
-      "resolution": [
-          "720p"
-      ],
-      "aspect_ratio": [
-          "16:9",
-          "9:16",
-          "1:1"
-      ],
-      "input_fields": [
-          {
-              "key": "image_url",
-              "type": "image",
-              "label": "Input Image",
-              "required": true
-          }
-      ],
-      "custom_fields": [
-          "negative_prompt",
-          "safety_checker"
-      ]
-  },
-  {
-      "duration": {
-          "steps": 2,
-          "max_duration": 8,
-          "min_duration": 4
-      },
-      "resolution": [
-          "720p",
-          "1080p"
-      ],
-      "aspect_ratio": [
-          "auto",
-          "16:9",
-          "9:16"
-      ],
-      "input_fields": [
-          {
-              "key": "first_frame_url",
-              "type": "image",
-              "label": "First Frame",
-              "required": true
-          },
-          {
-              "key": "last_frame_url",
-              "type": "image",
-              "label": "Last Frame",
-              "required": false
-          }
-      ],
-      "custom_fields": [
-          "enhance_prompt",
-          "auto_fix",
-          "enable_audio"
-      ]
-  },
-  {
-      "duration": {
-          "steps": 0,
-          "max_duration": 6,
-          "min_duration": 6
-      },
-      "resolution": [
-          "1080p"
-      ],
-      "aspect_ratio": [
-          "16:9"
-      ],
-      "custom_fields": [
-          "enhance_prompt"
-      ]
-  },
-  {
-      "duration": {
-          "steps": 1,
-          "max_duration": 30,
-          "min_duration": 1
-      }
-  },
-  {
-      "duration": {
-          "steps": 2,
-          "max_duration": 8,
-          "min_duration": 4
-      },
-      "resolution": [
-          "720p",
-          "1080p"
-      ],
-      "aspect_ratio": [
-          "16:9",
-          "9:16"
-      ],
-      "custom_fields": [
-          "enhance_prompt",
-          "auto_fix",
-          "enable_audio"
-      ]
-  },
-  {
-      "resolution": [
-          "1K",
-          "2K",
-          "4K"
-      ],
-      "aspect_ratio": [
-          "21:9",
-          "16:9",
-          "3:2",
-          "4:3",
-          "5:4",
-          "1:1",
-          "4:5",
-          "3:4",
-          "2:3",
-          "9:16"
-      ]
-  },
-  {
-      "duration": {
-          "steps": 4,
-          "max_duration": 10,
-          "min_duration": 6
-      },
-      "resolution": [
-          "768p"
-      ],
-      "aspect_ratio": [
-          "16:9"
-      ],
-      "input_fields": [
-          {
-              "key": "image_url",
-              "type": "image",
-              "label": "Input Image",
-              "required": true
-          }
-      ],
-      "custom_fields": [
-          "enhance_prompt"
-      ]
-  },
-  {
-  },
-  {
-      "duration": {
-          "steps": 0,
-          "max_duration": 6,
-          "min_duration": 6
-      },
-      "resolution": [
-          "1080p"
-      ],
-      "aspect_ratio": [
-          "16:9"
-      ],
-      "input_fields": [
-          {
-              "key": "image_url",
-              "type": "image",
-              "label": "Input Image",
-              "required": true
-          }
-      ],
-      "custom_fields": [
-          "enhance_prompt"
-      ]
-  },
-  {
-      "duration": {
-          "steps": 2,
-          "max_duration": 8,
-          "min_duration": 4
-      },
-      "resolution": [
-          "720p",
-          "1080p"
-      ],
-      "aspect_ratio": [
-          "auto",
-          "16:9",
-          "9:16"
-      ],
-      "input_fields": [
-          {
-              "key": "image_url",
-              "type": "image",
-              "label": "Input Image",
-              "required": true
-          }
-      ],
-      "custom_fields": [
-          "enhance_prompt",
-          "auto_fix",
-          "enable_audio"
-      ]
-  },
-  {
-      "input_fields": [
-          {
-              "key": "image_url",
-              "type": "image",
-              "label": "Avatar Image",
-              "required": true
-          },
-          {
-              "key": "audio_url",
-              "type": "audio",
-              "label": "Audio File",
-              "required": true
-          }
-      ],
-      "custom_fields": [
-          "audio_input",
-          "avatar_image_input"
-      ]
-  },
-  {
-      "duration": {
-          "steps": 4,
-          "max_duration": 12,
-          "min_duration": 4
-      },
-      "resolution": [
-          "720p"
-      ],
-      "aspect_ratio": [
-          "16:9",
-          "9:16"
-      ]
-  },
-  {
-      "duration": {
-          "steps": 2,
-          "max_duration": 8,
-          "min_duration": 4
-      },
-      "resolution": [
-          "720p",
-          "1080p"
-      ],
-      "value_types": {
-          "duration": "integer"
-      },
-      "aspect_ratio": [
-          "auto",
-          "16:9",
-          "9:16"
-      ],
-      "input_fields": [
-          {
-              "key": "first_frame_url",
-              "type": "image",
-              "label": "First Frame",
-              "required": true
-          },
-          {
-              "key": "last_frame_url",
-              "type": "image",
-              "label": "Last Frame",
-              "required": false
-          }
-      ],
-      "custom_fields": [
-          "enhance_prompt",
-          "auto_fix",
-          "enable_audio"
-      ],
-      "field_mapping": {
-          "enable_audio": "generate_audio"
-      }
-  },
-  {
-      "duration": {
-          "steps": 0,
-          "max_duration": 6,
-          "min_duration": 6
-      },
-      "resolution": [
-          "1080p"
-      ],
-      "aspect_ratio": [
-          "16:9"
-      ],
-      "input_fields": [
-          {
-              "key": "image_url",
-              "type": "image",
-              "label": "Input Image",
-              "required": true
-          }
-      ],
-      "custom_fields": [
-          "enhance_prompt"
-      ],
-      "field_mapping": {
-          "enhance_prompt": "prompt_optimizer"
-      }
+    }
   }
-]

@@ -13,7 +13,6 @@ from app.models.schemas import (
     JobResponse,
     JobStatus,
 )
-from app.registry import get_model, is_valid_model, validate_params, calculate_cost, GenerationType
 from app.services.job_store import job_store
 from app.services.supabase_client import supabase_service
 from app.services.credit_service import (
@@ -21,6 +20,10 @@ from app.services.credit_service import (
     estimate_duration_from_text,
     get_text_from_params,
     BUFFER_MULTIPLIER,
+)
+from app.services.cost_calculator import (
+    calculate_credits as calculate_credits_from_pricing_config,
+    get_pricing_config_for_model,
 )
 
 
@@ -32,7 +35,7 @@ router = APIRouter()
 
 
 # =============================================================================
-# Request Models (flexible - validation happens via registry)
+# Request Models (flexible - validation happens at model config level)
 # =============================================================================
 
 class GenerationRequest(BaseModel):
@@ -118,7 +121,7 @@ class FlexibleSpeechRequest(BaseModel):
 
 def _get_generation_type(model_id: str) -> str:
     """Get the generation type for a model."""
-    model = get_model(model_id)
+    model = supabase_service.get_model_config(model_id)
     if model:
         return model.get("type", "unknown")
     return "unknown"
@@ -186,7 +189,7 @@ def _needs_credit_reservation(model_id: str, params: dict[str, Any]) -> bool:
     """
     Check if a model requires credit reservation based on billing_strategy.
     
-    Reads from model's billing_strategy field in provider.json.
+    Reads from model's billing_strategy field in model_configs table.
     Defaults to "direct" if not specified.
     
     Args:
@@ -196,7 +199,7 @@ def _needs_credit_reservation(model_id: str, params: dict[str, Any]) -> bool:
     Returns:
         True if the model needs credit reservation
     """
-    model = get_model(model_id)
+    model = supabase_service.get_model_config(model_id)
     if not model:
         return False
     
@@ -206,15 +209,20 @@ def _needs_credit_reservation(model_id: str, params: dict[str, Any]) -> bool:
     return billing_strategy == "reservation"
 
 
-def _calculate_credits_for_model(
+class PricingConfigError(Exception):
+    """Raised when pricing configuration is missing or invalid."""
+    pass
+
+
+async def _calculate_credits_for_model(
     model_id: str, 
     params: dict[str, Any]
 ) -> tuple[int, bool, Optional[float]]:
     """
     Calculate credits needed for a generation request.
     
-    Uses the registry's calculate_cost function and converts USD to credits.
-    For models with unknown duration, estimates from text input.
+    Uses pricing_config from database (model_configs table).
+    NO FALLBACKS - pricing_config must exist with valid base_unit_price.
     
     Args:
         model_id: The model identifier
@@ -222,10 +230,16 @@ def _calculate_credits_for_model(
         
     Returns:
         Tuple of (credits_needed, needs_reservation, estimated_duration)
+        
+    Raises:
+        PricingConfigError: If pricing_config is missing or invalid
     """
-    model = get_model(model_id)
+    model = supabase_service.get_model_config(model_id)
     if not model:
-        return 0, False, None
+        raise PricingConfigError(
+            f"Model '{model_id}' not found in database. "
+            "Please contact support."
+        )
     
     needs_reservation = _needs_credit_reservation(model_id, params)
     model_type = model.get("type", "")
@@ -240,19 +254,33 @@ def _calculate_credits_for_model(
         # Use user-specified duration or default
         duration = params.get("duration", 1)
     
-    # Calculate cost in USD
-    cost_usd = calculate_cost(model_id, quantity=duration, params=params)
+    # Get pricing config from database - NO FALLBACK
+    pricing_config = await get_pricing_config_for_model(model_id)
     
-    # Convert to credits (1 USD = 100 credits)
-    credits = int(cost_usd * USD_TO_CREDITS)
+    if not pricing_config:
+        raise PricingConfigError(
+            f"Pricing configuration missing for model '{model_id}'. "
+            "Please contact support. (Error: pricing_config is null)"
+        )
     
-    # Minimum 1 credit for any generation
-    return max(credits, 1), needs_reservation, estimated_duration
+    if pricing_config.get("base_unit_price", 0) <= 0:
+        raise PricingConfigError(
+            f"Invalid pricing for model '{model_id}'. "
+            "Please contact support. (Error: base_unit_price is 0 or missing)"
+        )
+    
+    # Use database-driven cost calculator
+    credits = calculate_credits_from_pricing_config(
+        pricing_config, 
+        params, 
+        override_duration=duration if needs_reservation else None
+    )
+    return credits, needs_reservation, estimated_duration
 
 
 def _validate_request_params(model_id: str, params: dict[str, Any]) -> None:
     """
-    Validate request parameters against the model's schema.
+    Validate request parameters against the model's requirements.
     
     Args:
         model_id: The model identifier
@@ -269,25 +297,25 @@ def _validate_request_params(model_id: str, params: dict[str, Any]) -> None:
     }, "H1,H2")
     # #endregion
     
-    validation = validate_params(model_id, params)
+    # Basic validation - ensure model exists
+    model = supabase_service.get_model_config(model_id)
+    if not model:
+        raise HTTPException(
+            status_code=400,
+            detail={
+                "error": "validation_error",
+                "message": f"Unknown model: {model_id}",
+                "errors": [f"Unknown model: {model_id}"]
+            }
+        )
     
     # #region agent log
     _debug_log("generate.py:validation_result", "Validation completed", {
         "model_id": model_id,
-        "valid": validation["valid"],
-        "errors": validation.get("errors", [])
+        "valid": True,
+        "errors": []
     }, "H1,H2")
     # #endregion
-    
-    if not validation["valid"]:
-        raise HTTPException(
-            status_code=400, 
-            detail={
-                "error": "validation_error",
-                "message": "Invalid parameters",
-                "errors": validation["errors"]
-            }
-        )
 
 
 async def _create_generation_job(
@@ -323,7 +351,8 @@ async def _create_generation_job(
         sentry_sdk.set_user(None)
     
     # Validate model
-    if not is_valid_model(model_id):
+    model_config = supabase_service.get_model_config(model_id)
+    if not model_config or not model_config.get("is_active", False):
         raise HTTPException(status_code=400, detail=f"Invalid or disabled model: {model_id}")
     
     # Validate parameters dynamically
@@ -331,7 +360,18 @@ async def _create_generation_job(
         _validate_request_params(model_id, params)
     
     # Calculate credits needed (may include estimation for unknown duration models)
-    credits_needed, needs_reservation, estimated_duration = _calculate_credits_for_model(model_id, params)
+    # NO FALLBACK - pricing must be configured in database
+    try:
+        credits_needed, needs_reservation, estimated_duration = await _calculate_credits_for_model(model_id, params)
+    except PricingConfigError as e:
+        raise HTTPException(
+            status_code=500,
+            detail={
+                "error": "pricing_config_error",
+                "message": str(e),
+                "support_message": "Please contact support to resolve this issue.",
+            }
+        )
     
     # #region agent log
     _debug_log("generate.py:credits_calc", "Credits calculated", {

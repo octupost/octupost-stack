@@ -5,18 +5,28 @@ This service provides a single entry point for all AI generation requests,
 routing to the appropriate provider based on the model's configuration.
 """
 
-from typing import Any, Optional, Type
+from typing import Any, Literal, Optional, Type
 
-from app.registry import (
-    get_model,
-    get_provider,
-    is_valid_model,
-    validate_params,
-    GenerationType,
-)
+# Generation types supported by the system
+GenerationType = Literal[
+    "text-to-image",
+    "text-to-video",
+    "image-to-video",
+    "text-to-speech",
+    "text-to-audio",
+    "text-to-music",
+    "video-to-audio",
+    "avatar",
+    "reference-to-video",
+    "first-last-frame-to-video",
+    "retake",
+    "text-generation",
+]
+
 from .providers.base import BaseProvider
 from .providers.fal_provider import FalProvider
 from .providers.elevenlabs_provider import ElevenLabsProvider
+from .supabase_client import supabase_service
 
 
 # Provider registry mapping provider IDs to their implementations
@@ -33,11 +43,16 @@ def _get_provider_id_from_endpoint(endpoint: str) -> str:
     """
     Determine the provider ID from the model endpoint.
     
+    NO FALLBACK - endpoint must match a known provider prefix.
+    
     Args:
         endpoint: The model endpoint (e.g., "fal-ai/veo3.1", "elevenlabs/eleven_multilingual_v2")
         
     Returns:
         Provider ID (e.g., "fal-ai", "elevenlabs")
+        
+    Raises:
+        ValueError: If endpoint doesn't match any known provider
     """
     if endpoint.startswith("fal-ai/"):
         return "fal-ai"
@@ -47,8 +62,11 @@ def _get_provider_id_from_endpoint(endpoint: str) -> str:
     # if endpoint.startswith("runway/"):
     #     return "runway"
     
-    # Default to fal-ai for backward compatibility
-    return "fal-ai"
+    # NO FALLBACK - raise error for unknown providers
+    raise ValueError(
+        f"Unknown provider for endpoint: {endpoint}. "
+        "Endpoint must start with a known provider prefix (e.g., 'fal-ai/', 'elevenlabs/')."
+    )
 
 
 class GenerationService:
@@ -143,34 +161,19 @@ class GenerationService:
         Raises:
             ValueError: If model is invalid or provider not implemented
         """
-        # Determine provider from model_id
-        provider_id = _get_provider_id_from_endpoint(model_id)
-        
-        # Get model configuration from provider.json
-        model_config = get_model(model_id)
-        
-        # Handle ElevenLabs models - can be in provider.json or handled dynamically
-        if provider_id == "elevenlabs":
-            # If model is in provider.json, use its config; otherwise use dynamic handling
-            if model_config and model_config.get("is_active", False):
-                # Model is in provider.json - use standard flow
-                pass
-            else:
-                # Fallback: handle ElevenLabs models not in provider.json
-                return await self._generate_elevenlabs(model_id, params)
+        # Get model configuration from database - NO FALLBACK
+        # All models (including ElevenLabs) must be configured in the database
+        model_config = supabase_service.get_model_config(model_id)
         
         if not model_config:
-            raise ValueError(f"Unknown model: {model_id}")
+            raise ValueError(
+                f"Unknown model: {model_id}. "
+                "All models must be configured in the database."
+            )
         
-        # Check if model is active (new schema uses is_active)
+        # Check if model is active
         if not model_config.get("is_active", False):
             raise ValueError(f"Model {model_id} is not active")
-        
-        # Validate parameters using dynamic validation
-        if validate:
-            validation = validate_params(model_id, params)
-            if not validation["valid"]:
-                raise ValueError(f"Invalid parameters: {', '.join(validation['errors'])}")
         
         # Determine provider from endpoint
         endpoint = model_config.get("endpoint", model_id)
@@ -182,38 +185,6 @@ class GenerationService:
             raise ValueError(f"Provider not implemented: {provider_id}")
         
         # Execute generation - the provider will handle parameter transformation
-        return await provider.generate(model_id, model_config, params)
-    
-    async def _generate_elevenlabs(
-        self,
-        model_id: str,
-        params: dict[str, Any],
-    ) -> dict[str, Any]:
-        """
-        Handle ElevenLabs generation separately from registry-based models.
-        
-        ElevenLabs models are not stored in provider.json, so we handle them
-        directly with the ElevenLabsProvider.
-        
-        Args:
-            model_id: The model identifier (e.g., "elevenlabs/eleven_multilingual_v2")
-            params: Generation parameters
-            
-        Returns:
-            Normalized generation result
-        """
-        provider = self._get_provider_instance("elevenlabs")
-        if not provider:
-            raise ValueError("ElevenLabs provider not configured")
-        
-        # Create minimal model config for ElevenLabs
-        # The provider handles all the details
-        model_config = {
-            "endpoint": model_id,
-            "type": "text-to-speech",
-            "is_active": True,
-        }
-        
         return await provider.generate(model_id, model_config, params)
     
     async def generate_image(
@@ -374,15 +345,20 @@ class GenerationService:
         Returns:
             List of model IDs (endpoints)
         """
-        from app.registry import get_enabled_models, get_models_by_type
+        client = supabase_service.client
+        if not client:
+            return []
         
-        if gen_type:
-            models = get_models_by_type(gen_type)
-        else:
-            models = get_enabled_models()
-        
-        # Return all active models - they're all Fal AI for now
-        return list(models.keys())
+        try:
+            query = client.schema("octupost").table("model_configs").select("endpoint").eq("is_active", True)
+            
+            if gen_type:
+                query = query.eq("type", gen_type)
+            
+            result = query.execute()
+            return [row["endpoint"] for row in result.data] if result.data else []
+        except Exception:
+            return []
 
 
 # Singleton instance

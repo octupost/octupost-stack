@@ -21,7 +21,11 @@ from app.services.supabase_client import supabase_service
 from app.services.job_store import job_store
 from app.services.credit_service import credit_service
 from app.models.schemas import JobStatus
-from app.registry import get_model, calculate_cost
+from app.services.supabase_client import supabase_service
+from app.services.cost_calculator import (
+    calculate_credits as calculate_credits_from_pricing_config,
+    get_pricing_config_for_model,
+)
 
 # Credit conversion: 1 USD = 100 credits
 USD_TO_CREDITS = 100
@@ -71,11 +75,19 @@ def _get_result_metadata(result: dict, gen_type: str) -> dict:
     return {}
 
 
-def _calculate_actual_credits(model_id: str, actual_duration: float, params: dict) -> int:
+class PricingConfigError(Exception):
+    """Raised when pricing configuration is missing or invalid."""
+    pass
+
+
+async def _calculate_actual_credits(model_id: str, actual_duration: float, params: dict) -> int:
     """
     Calculate actual credits based on generation result duration.
     
     Used for settling credit reservations after generation completes.
+    Uses database pricing config from model_configs table.
+    
+    NO FALLBACKS - pricing_config must exist with valid base_unit_price.
     
     Args:
         model_id: Model identifier
@@ -84,15 +96,34 @@ def _calculate_actual_credits(model_id: str, actual_duration: float, params: dic
         
     Returns:
         Actual credits to charge
+        
+    Raises:
+        PricingConfigError: If pricing_config is missing or invalid
     """
     if not actual_duration or actual_duration <= 0:
         return 0
     
-    # Calculate cost using actual duration
-    cost_usd = calculate_cost(model_id, quantity=actual_duration, params=params)
-    credits = int(cost_usd * USD_TO_CREDITS)
+    # Get pricing config from database - NO FALLBACK
+    pricing_config = await get_pricing_config_for_model(model_id)
     
-    return max(credits, 1)
+    if not pricing_config:
+        raise PricingConfigError(
+            f"No pricing_config found for model '{model_id}'. "
+            "Please configure pricing in the admin panel."
+        )
+    
+    if pricing_config.get("base_unit_price", 0) <= 0:
+        raise PricingConfigError(
+            f"Invalid pricing for model '{model_id}'. "
+            "base_unit_price is 0 or missing. Please configure pricing in the admin panel."
+        )
+    
+    # Use database-driven cost calculator with actual duration
+    return calculate_credits_from_pricing_config(
+        pricing_config, 
+        params, 
+        override_duration=actual_duration
+    )
 
 
 async def _run_generation(
@@ -171,7 +202,7 @@ async def _run_generation(
         # Settle credit reservation if applicable
         if reservation_id and user_id:
             actual_duration = metadata.get("duration", 0)
-            actual_credits = _calculate_actual_credits(model_id, actual_duration, params)
+            actual_credits = await _calculate_actual_credits(model_id, actual_duration, params)
             
             async def settle():
                 settlement = await credit_service.settle_reservation(

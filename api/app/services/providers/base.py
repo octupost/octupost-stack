@@ -6,9 +6,28 @@ Abstract base class for AI provider implementations. All providers
 """
 
 from abc import ABC, abstractmethod
-from typing import Any, Optional
+from typing import Any, Literal, Optional, TypedDict
 
-from app.registry import Provider, Model
+
+# Provider type definitions
+ProviderType = Literal["sdk", "rest", "websocket"]
+AuthMethod = Literal["api-key", "oauth", "bearer"]
+
+
+class Provider(TypedDict, total=False):
+    """Provider configuration."""
+    name: str
+    type: ProviderType
+    sdkPackage: Optional[str]
+    authMethod: AuthMethod
+    authEnvVar: str
+    baseUrl: Optional[str]
+    capabilities: list[str]
+    responseMapping: dict[str, str]
+
+
+# Model configuration type (simplified)
+Model = dict[str, Any]
 
 
 class BaseProvider(ABC):
@@ -24,7 +43,7 @@ class BaseProvider(ABC):
         Initialize the provider with its configuration.
         
         Args:
-            provider_config: Provider configuration from the registry
+            provider_config: Provider configuration
         """
         self.config = provider_config
     

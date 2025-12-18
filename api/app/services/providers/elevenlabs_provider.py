@@ -12,8 +12,7 @@ import httpx
 import sentry_sdk
 
 from app.config import get_settings
-from app.registry import Model
-from .base import BaseProvider
+from .base import BaseProvider, Model
 
 
 # ElevenLabs model definitions (multilingual models only)

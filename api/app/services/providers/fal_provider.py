@@ -1,16 +1,15 @@
 """
 Fal AI Provider Implementation
 
-This provider handles all Fal AI model integrations using the centralized
-model registry (provider.json) and the transformer for parameter handling.
+This provider handles all Fal AI model integrations using the model_configs
+database table and the transformer for parameter handling.
 """
 
 from typing import Any
 
 import fal_client
 
-from app.registry import Model, Provider
-from .base import BaseProvider
+from .base import BaseProvider, Model, Provider
 from .transformer import transform_params
 
 

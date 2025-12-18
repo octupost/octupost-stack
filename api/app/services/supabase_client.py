@@ -393,6 +393,64 @@ class SupabaseService:
             return "video"
 
 
+    # =========================================================================
+    # Model Config Operations
+    # =========================================================================
+    
+    def get_model_config(self, endpoint: str) -> Optional[dict[str, Any]]:
+        """
+        Get model configuration from model_configs table.
+        
+        This includes admin-defined param_defaults which are used
+        to set default values for parameters (especially hidden ones).
+        
+        Args:
+            endpoint: Model endpoint (e.g., "fal-ai/veo3.1")
+            
+        Returns:
+            Model config dict including param_defaults, or None if not found
+        """
+        if not self.client:
+            return None
+        
+        try:
+            result = (
+                self.client.schema("octupost")
+                .table("model_configs")
+                .select("*")
+                .eq("endpoint", endpoint)
+                .eq("is_active", True)
+                .limit(1)
+                .execute()
+            )
+            
+            if result.data:
+                return result.data[0]
+            return None
+        except Exception as e:
+            sentry_sdk.capture_exception(e)
+            return None
+    
+    def get_model_param_defaults(self, endpoint: str) -> dict[str, Any]:
+        """
+        Get admin-defined param_defaults for a model.
+        
+        These are default values set in the admin panel that should
+        always be sent (for hidden params) or used as initial values
+        (for visible params).
+        
+        Args:
+            endpoint: Model endpoint (e.g., "fal-ai/veo3.1")
+            
+        Returns:
+            Dictionary of parameter defaults, or empty dict if not found
+        """
+        config = self.get_model_config(endpoint)
+        if config:
+            return config.get("param_defaults", {})
+        return {}
+
+
 # Singleton instance
 supabase_service = SupabaseService()
 

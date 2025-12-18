@@ -21,6 +21,7 @@
     "playground": "cd api && source venv/bin/activate && streamlit run playground.py --server.port 8501 --server.headless true"
   },
   "devDependencies": {
-    "eslint": "^9.39.1"
+    "eslint": "^9.39.1",
+    "pg": "^8.16.3"
   }
 }
