@@ -1,0 +1,58 @@
+// src/utils/tap-store/tap-api.ts
+import { tapEffect, tapMemo, tapRef } from "@assistant-ui/tap";
+var ReadonlyApiHandler = class {
+  constructor(ref) {
+    this.ref = ref;
+  }
+  get(_, prop) {
+    return this.ref.current[prop];
+  }
+  ownKeys() {
+    return Object.keys(this.ref.current);
+  }
+  has(_, prop) {
+    return prop in this.ref.current;
+  }
+  getOwnPropertyDescriptor(_, prop) {
+    return Object.getOwnPropertyDescriptor(this.ref.current, prop);
+  }
+  set() {
+    return false;
+  }
+  setPrototypeOf() {
+    return false;
+  }
+  defineProperty() {
+    return false;
+  }
+  deleteProperty() {
+    return false;
+  }
+  preventExtensions() {
+    return false;
+  }
+};
+var tapApi = (api, options) => {
+  const ref = tapRef(api);
+  tapEffect(() => {
+    ref.current = api;
+  });
+  const apiProxy = tapMemo(
+    () => new Proxy({}, new ReadonlyApiHandler(ref)),
+    []
+  );
+  const key = options?.key;
+  const state = api.getState();
+  return tapMemo(
+    () => ({
+      key,
+      state,
+      api: apiProxy
+    }),
+    [state, key]
+  );
+};
+export {
+  tapApi
+};
+//# sourceMappingURL=tap-api.js.map

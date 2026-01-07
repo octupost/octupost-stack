@@ -1,0 +1,16 @@
+"use client";
+
+// src/primitives/assistant/AssistantIf.tsx
+import { useAssistantState } from "../../context/index.js";
+var useAssistantIf = (props) => {
+  return useAssistantState(props.condition);
+};
+var AssistantIf = ({ children, condition }) => {
+  const result = useAssistantIf({ condition });
+  return result ? children : null;
+};
+AssistantIf.displayName = "AssistantIf";
+export {
+  AssistantIf
+};
+//# sourceMappingURL=AssistantIf.js.map

@@ -58,3 +58,8 @@ COMMENT ON COLUMN octupost.model_configs.parameters IS
 - default: Admin-defined default value
 - type, enum, min, max, step: Schema info (synced from FAL, can be overridden)';
 
+
+
+
+
+

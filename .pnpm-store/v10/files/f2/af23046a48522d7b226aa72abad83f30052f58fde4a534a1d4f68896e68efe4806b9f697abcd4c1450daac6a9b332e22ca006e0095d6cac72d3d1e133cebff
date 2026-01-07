@@ -1,0 +1,5 @@
+import type { ExtractorMessage } from './types.js';
+export declare function setNestedProperty(obj: Record<string, any>, keyPath: string, value: any): void;
+export declare function getSortedMessages(messages: Array<ExtractorMessage>): Array<ExtractorMessage>;
+export declare function localeCompare(a: string, b: string): number;
+export declare function getDefaultProjectRoot(): string;

@@ -78,19 +78,21 @@ export function getAppUrl(app: AppName, env?: string): string {
  */
 export function getCookieDomain(env?: string, hostname?: string): string | undefined {
   const environment = env ?? process.env.NODE_ENV
-  
+
   if (environment === "production") {
     return COOKIE_DOMAIN
   }
-  
+
   // Check hostname (server-side when passed, client-side via window)
   const currentHostname = hostname ?? (typeof window !== "undefined" ? window.location.hostname : undefined)
-  
+
   // For localhost, return undefined to allow cookie sharing between different ports
-  if (currentHostname === "localhost" || currentHostname === "127.0.0.1") {
+  // Also return undefined if hostname is not available (server-side without hostname param)
+  // This is safe because undefined allows the cookie to be set on the current domain
+  if (!currentHostname || currentHostname === "localhost" || currentHostname === "127.0.0.1") {
     return undefined
   }
-  
+
   // For subdomain-based local development (octupost.local)
   return DEV_COOKIE_DOMAIN
 }

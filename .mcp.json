@@ -1,10 +1,11 @@
 {
   "mcpServers": {
-    "supabase": {
-      "type": "http",
-      "url": "https://mcp.supabase.com/mcp?project_ref=hdqkpswdtcioklcglycz&features=docs%2Caccount%2Cdatabase%2Cdebugging%2Cdevelopment%2Cfunctions%2Cbranching%2Cstorage",
-      "headers": {
-        "apikey": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImhkcWtwc3dkdGNpb2tsY2dseWN6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjQ4OTAxNjQsImV4cCI6MjA4MDQ2NjE2NH0.HRKXJ_OJ37COBKHTTJRf_5MWRLapqptWHFx18uNzmh0"
+    "agent-test": {
+      "command": "/Library/Frameworks/Python.framework/Versions/3.13/bin/python3",
+      "args": ["/Users/serhatcamici/dev/octupost-stack/api/mcp_agent_test.py"],
+      "env": {
+        "OCTUPOST_API_URL": "http://localhost:8000",
+        "OCTUPOST_TEST_PROJECT_ID": "21fdc0b5-b1ad-45b0-97b1-f4fe6d481fc7"
       }
     }
   }

@@ -7,9 +7,11 @@
   "exports": {
     ".": "./src/index.ts",
     "./config": "./src/config/index.ts",
+    "./types": "./src/types/index.ts",
     "./supabase/client": "./src/supabase/client.ts",
     "./supabase/server": "./src/supabase/server.ts",
     "./supabase/middleware": "./src/supabase/middleware.ts",
+    "./supabase/auth-helpers": "./src/supabase/auth-helpers.ts",
     "./library": "./src/library/index.ts",
     "./registry": "./src/registry/index.ts"
   },

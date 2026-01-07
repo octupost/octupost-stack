@@ -15,4 +15,5 @@ export {
   getSignUpUrl,
   type UpdateSessionConfig,
 } from "./middleware"
+export { getValidAccessToken, getAuthHeaders } from "./auth-helpers"
 

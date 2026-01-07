@@ -1,0 +1,6 @@
+// src/legacy-runtime/runtime-cores/local/index.ts
+import { useLocalRuntime } from "./useLocalRuntime.js";
+export {
+  useLocalRuntime
+};
+//# sourceMappingURL=index.js.map

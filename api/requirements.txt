@@ -3,6 +3,9 @@ fastapi>=0.115.0
 uvicorn[standard]>=0.32.0
 python-multipart>=0.0.17
 
+# Agno AI Agent Framework
+agno>=1.0.0
+
 # Inngest for job processing
 inngest
 
@@ -25,9 +28,9 @@ python-ulid>=3.0.0
 # Supabase client
 supabase>=2.0.0
 
-# PostgreSQL driver (for Agno PostgresDb)
-psycopg2-binary>=2.9.0
+# SQLAlchemy for agno PostgreSQL storage
 sqlalchemy>=2.0.0
+psycopg2-binary>=2.9.0
 
 # Sentry for error tracking
 sentry-sdk[fastapi]>=2.0.0
@@ -35,13 +38,11 @@ sentry-sdk[fastapi]>=2.0.0
 # Stripe for billing
 stripe>=14.0.0
 
-# Agno AI agents
-agno[openrouter]
-openai
+# JWT verification
+PyJWT>=2.8.0
 
-# Agno tools for research
-duckduckgo-search
-youtube-search-python
-youtube_transcript_api
-wikipedia
-beautifulsoup4
+# API Documentation
+scalar-fastapi>=1.0.0
+
+# MCP Server for agent testing
+mcp>=1.0.0

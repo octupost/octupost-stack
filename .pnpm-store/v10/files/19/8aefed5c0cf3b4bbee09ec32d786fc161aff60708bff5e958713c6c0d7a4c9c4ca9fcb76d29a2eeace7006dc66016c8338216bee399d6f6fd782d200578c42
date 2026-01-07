@@ -1,0 +1,4 @@
+import type { ChatModelAdapter } from "./ChatModelAdapter";
+import type { LocalRuntimeOptions } from "./LocalRuntimeOptions";
+export declare const useLocalRuntime: (adapter: ChatModelAdapter, { cloud, ...options }?: LocalRuntimeOptions) => import("../../runtime").AssistantRuntime;
+//# sourceMappingURL=useLocalRuntime.d.ts.map

@@ -1,0 +1,1 @@
+{"version":3,"file":"useLocalRuntime.d.ts","sourceRoot":"","sources":["../../../../src/legacy-runtime/runtime-cores/local/useLocalRuntime.tsx"],"names":[],"mappings":"AAGA,OAAO,KAAK,EAAE,gBAAgB,EAAE,MAAM,oBAAoB,CAAC;AAE3D,OAAO,KAAK,EAAE,mBAAmB,EAAE,MAAM,uBAAuB,CAAC;AA4CjE,eAAO,MAAM,eAAe,GAC1B,SAAS,gBAAgB,EACzB,wBAAuB,mBAAwB,6CAUhD,CAAC"}

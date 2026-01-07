@@ -1,0 +1,14 @@
+{
+  "mediaTypes": ["image", "video", "audio"],
+  "assetTypes": ["image", "video", "avatar_video", "avatar_image", "speech", "music", "sound_effect"],
+  "composerDisplaySections": ["image", "video", "avatar", "speech", "music", "sound_effect"],
+  "assetTypeToMediaType": {
+    "image": "image",
+    "video": "video",
+    "avatar_video": "video",
+    "avatar_image": "image",
+    "speech": "audio",
+    "music": "audio",
+    "sound_effect": "audio"
+  }
+}

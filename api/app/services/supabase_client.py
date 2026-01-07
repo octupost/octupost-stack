@@ -1,11 +1,13 @@
 """Supabase client for database operations."""
 
+import uuid
 from typing import Any, Optional
 import sentry_sdk
 from supabase import create_client, Client
 
 from app.config import get_settings
 from app.services.asset_naming import generate_asset_name
+from app.media_types import derive_media_type
 
 
 class SupabaseService:
@@ -60,18 +62,20 @@ class SupabaseService:
         generation_params: Optional[dict[str, Any]] = None,
         workplace_id: Optional[str] = None,
         media_type: Optional[str] = None,
+        project_id: Optional[str] = None,
     ) -> Optional[dict[str, Any]]:
         """
         Create a new asset record with in_queue status.
 
         Args:
             owner_id: UUID of the asset owner (user)
-            asset_type: Type of asset (image, video, avatar_video, speech, music, soundtrack)
+            asset_type: Type of asset (image, video, avatar_video, speech, music, sound_effect)
             source: Source of asset (local_upload, generative_ai, public_url)
             generation_params: Parameters used for generation (prompt, model, etc.)
             workplace_id: Optional workplace to associate with the asset
-            media_type: Fundamental media category (image, audio, video). 
+            media_type: Fundamental media category (image, audio, video).
                        If not provided, derived from asset_type.
+            project_id: Optional project to link the asset to
 
         Returns:
             The created asset record, or None if Supabase is not configured
@@ -79,29 +83,46 @@ class SupabaseService:
         if not self.client:
             return None
 
-        # Resolve workplace: prefer provided; otherwise fall back to personal workspace for the owner
-        resolved_workplace_id = workplace_id or self.get_personal_workplace_id(owner_id)
+        # Resolve workplace: 1) explicit workplace_id, 2) project's workspace, 3) personal workspace
+        if workplace_id:
+            resolved_workplace_id = workplace_id
+        elif project_id:
+            resolved_workplace_id = self.get_workspace_id_from_project(project_id) or self.get_personal_workplace_id(owner_id)
+        else:
+            resolved_workplace_id = self.get_personal_workplace_id(owner_id)
 
-        # Generate a user-friendly name from the prompt (for AI-generated assets)
-        prompt = (generation_params or {}).get("prompt")
+        # Pre-generate asset ID for use in naming
+        asset_id = str(uuid.uuid4())
+
+        # Extract generation params for naming
+        gen_params = generation_params or {}
+        prompt = gen_params.get("prompt")
+        model = gen_params.get("model")
+        voice = gen_params.get("voice") or gen_params.get("voice_id")
+
+        # Generate a user-friendly name with type prefix, model/voice, and short ID
         asset_name = generate_asset_name(
             asset_type=asset_type,
             source=source,
             prompt=prompt,
+            model=model,
+            voice=voice,
+            asset_id=asset_id,
         )
 
         # Derive media_type from asset_type if not provided
         if media_type is None:
-            media_type = self._derive_media_type(asset_type)
+            media_type = derive_media_type(asset_type)
 
         data = {
+            "id": asset_id,
             "owner_id": owner_id,
             "name": asset_name,
-            "type": asset_type,
+            "asset_type": asset_type,
             "media_type": media_type,
             "source": source,
             "generation_status": "in_queue",
-            "generation_params": generation_params or {},
+            "generation_params": gen_params,
         }
 
         result = (
@@ -139,6 +160,15 @@ class SupabaseService:
                 sentry_sdk.capture_exception(exc)
                 print(f"[SupabaseService] Failed to link asset to workplace: {exc}")
 
+        # Link asset to project if provided
+        if asset and project_id:
+            try:
+                self.link_asset_to_project(asset["id"], project_id)
+            except Exception as exc:
+                # Avoid failing asset creation due to linkage issues
+                sentry_sdk.capture_exception(exc)
+                print(f"[SupabaseService] Failed to link asset to project: {exc}")
+
         return asset
 
     def link_asset_to_workplace(self, asset_id: str, workplace_id: str) -> None:
@@ -170,6 +200,37 @@ class SupabaseService:
             .execute()
         )
 
+    def link_asset_to_project(self, asset_id: str, project_id: str) -> None:
+        """
+        Insert or upsert a project->asset association.
+
+        Uses upsert to avoid duplicate errors if the link already exists.
+        """
+        if not self.client:
+            return
+
+        sentry_sdk.set_context(
+            "asset",
+            {
+                "operation": "link_asset_to_project",
+                "asset_id": asset_id,
+                "project_id": project_id,
+            },
+        )
+
+        (
+            self.client.schema("octupost")
+            .table("project_assets")
+            .upsert(
+                {
+                    "asset_id": asset_id,
+                    "project_id": project_id,
+                },
+                on_conflict="project_id,asset_id",
+            )
+            .execute()
+        )
+
     def get_personal_workplace_id(self, owner_id: str) -> Optional[str]:
         """
         Fetch the personal workspace for the given owner, if it exists.
@@ -197,6 +258,27 @@ class SupabaseService:
 
         if result.data:
             return result.data[0]["id"]
+        return None
+
+    def get_workspace_id_from_project(self, project_id: str) -> Optional[str]:
+        """
+        Fetch the workspace_id for a given project from workplace_projects table.
+        Returns None if project has no workspace association.
+        """
+        if not self.client:
+            return None
+
+        result = (
+            self.client.schema("octupost")
+            .table("workplace_projects")
+            .select("workplace_id")
+            .eq("project_id", project_id)
+            .limit(1)
+            .execute()
+        )
+
+        if result.data and len(result.data) > 0:
+            return result.data[0].get("workplace_id")
         return None
 
     def update_asset_status(
@@ -333,7 +415,7 @@ class SupabaseService:
         )
 
         if asset_type:
-            query = query.eq("type", asset_type)
+            query = query.eq("asset_type", asset_type)
 
         result = query.execute()
         return result.data or []
@@ -371,85 +453,49 @@ class SupabaseService:
 
         return len(result.data) > 0 if result.data else False
 
-    @staticmethod
-    def _derive_media_type(asset_type: str) -> str:
-        """
-        Derive the fundamental media_type from a specific asset_type.
-        
-        Args:
-            asset_type: Specific asset type (image, video, avatar_video, speech, music, soundtrack)
-            
-        Returns:
-            Fundamental media type (image, audio, video)
-        """
-        if asset_type in ("video", "avatar_video"):
-            return "video"
-        elif asset_type == "image":
-            return "image"
-        elif asset_type in ("speech", "music", "soundtrack"):
-            return "audio"
-        else:
-            # Fallback for unknown types
-            return "video"
-
+    # derive_media_type is now imported from app.types (centralized in packages/shared/src/types/types.json)
 
     # =========================================================================
-    # Model Config Operations
+    # Generation Cost Logging
     # =========================================================================
-    
-    def get_model_config(self, endpoint: str) -> Optional[dict[str, Any]]:
+
+    def log_generation_cost(
+        self,
+        user_id: str,
+        job_id: str,
+        model_id: str,
+        generation_type: str,
+        credits_charged: int,
+        input_params: dict,
+    ) -> None:
         """
-        Get model configuration from model_configs table.
+        Log a generation charge for cost monitoring.
         
-        This includes admin-defined param_defaults which are used
-        to set default values for parameters (especially hidden ones).
+        This data can be cross-referenced with Fal's Usage API to verify pricing accuracy.
         
         Args:
-            endpoint: Model endpoint (e.g., "fal-ai/veo3.1")
-            
-        Returns:
-            Model config dict including param_defaults, or None if not found
+            user_id: User who was charged
+            job_id: Associated job ID
+            model_id: Model endpoint used
+            generation_type: Type of generation (text-to-video, etc.)
+            credits_charged: Credits that were deducted
+            input_params: Parameters that affect pricing (duration, resolution, etc.)
         """
         if not self.client:
-            return None
+            return
         
         try:
-            result = (
-                self.client.schema("octupost")
-                .table("model_configs")
-                .select("*")
-                .eq("endpoint", endpoint)
-                .eq("is_active", True)
-                .limit(1)
-                .execute()
-            )
-            
-            if result.data:
-                return result.data[0]
-            return None
+            self.client.schema("octupost").table("generation_cost_log").insert({
+                "user_id": user_id,
+                "job_id": job_id,
+                "model_id": model_id,
+                "generation_type": generation_type,
+                "credits_charged": credits_charged,
+                "input_params": input_params,
+            }).execute()
         except Exception as e:
+            # Non-critical - don't fail generation, but log for monitoring
             sentry_sdk.capture_exception(e)
-            return None
-    
-    def get_model_param_defaults(self, endpoint: str) -> dict[str, Any]:
-        """
-        Get admin-defined param_defaults for a model.
-        
-        These are default values set in the admin panel that should
-        always be sent (for hidden params) or used as initial values
-        (for visible params).
-        
-        Args:
-            endpoint: Model endpoint (e.g., "fal-ai/veo3.1")
-            
-        Returns:
-            Dictionary of parameter defaults, or empty dict if not found
-        """
-        config = self.get_model_config(endpoint)
-        if config:
-            return config.get("param_defaults", {})
-        return {}
-
 
 # Singleton instance
 supabase_service = SupabaseService()

@@ -12,7 +12,6 @@ Centralized values (from @octupost/shared):
 """
 
 from functools import lru_cache
-from typing import Optional
 
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
@@ -30,12 +29,22 @@ PORTS = {
     "api": 8000,
 }
 
+# =============================================================================
+# Model Defaults - Centralized AI model configuration
+# =============================================================================
+
+MODEL_DEFAULTS = {
+    "video": "google/veo-3.1",
+    "tts": "elevenlabs-v3",
+    "music": "minimax-music",
+    "sound_effects": "elevenlabs-sfx",
+}
+
 # Default CORS origins matching the centralized config
 DEFAULT_CORS_ORIGINS = ",".join([
     f"http://localhost:{PORTS['app']}",
     f"http://localhost:{PORTS['social']}",
     f"https://app.{DOMAIN}",
-    "https://os.agno.com",  # Agno playground
 ])
 
 
@@ -51,16 +60,11 @@ class Settings(BaseSettings):
 
     # Fal AI Configuration
     fal_key: str = ""
+    fal_webhook_url: str = ""  # Public URL for Fal to call on completion (e.g., https://api.octupost.com/api/webhooks/fal)
 
     # ElevenLabs Configuration
     elevenlabs_api_key: str = ""
 
-    # OpenAI Configuration (for Agno agents)
-    openai_api_key: str = ""
-    
-    # OpenRouter Configuration (for free LLM models)
-    openrouter_api_key: str = ""
-    
     # Stock Footage API Keys
     pexels_api_key: str = ""
     pixabay_api_key: str = ""
@@ -75,33 +79,15 @@ class Settings(BaseSettings):
     supabase_url: str = ""
     next_public_supabase_url: str = ""  # Fallback if SUPABASE_URL not set
     supabase_service_role_key: str = ""
-    
-    # Supabase Direct Database Connection (for Agno PostgresDb)
-    # These are used to construct the PostgreSQL connection URL for Agno agents
-    supabase_project_ref: str = ""  # e.g., "xyzabc123" from your project URL
-    supabase_db_password: str = ""  # Database password for postgres user
-    
+
+    # Supabase JWT Secret (legacy HS256 fallback)
+    # Only needed if your Supabase tokens still use HS256 instead of RS256
+    supabase_jwt_secret: str = ""
+
     @property
     def effective_supabase_url(self) -> str:
         """Get effective Supabase URL, preferring SUPABASE_URL over NEXT_PUBLIC_SUPABASE_URL."""
         return self.supabase_url or self.next_public_supabase_url
-    
-    @property
-    def supabase_db_url(self) -> Optional[str]:
-        """
-        Get the direct PostgreSQL connection URL for Supabase.
-        
-        Used by Agno PostgresDb for agent session/memory persistence.
-        Returns None if required credentials are not configured.
-        
-        Uses direct connection (port 5432) for full Postgres feature support.
-        """
-        if not self.supabase_project_ref or not self.supabase_db_password:
-            return None
-        return f"postgresql://postgres:{self.supabase_db_password}@db.{self.supabase_project_ref}.supabase.co:5432/postgres"
-
-    # Redis Configuration (optional)
-    redis_url: Optional[str] = None
 
     # Server Configuration (aligned with centralized PORTS)
     host: str = "0.0.0.0"

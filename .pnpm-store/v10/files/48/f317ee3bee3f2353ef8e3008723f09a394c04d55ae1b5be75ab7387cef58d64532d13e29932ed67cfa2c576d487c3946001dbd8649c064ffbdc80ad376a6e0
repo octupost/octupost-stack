@@ -1,0 +1,12 @@
+import type { FC, PropsWithChildren } from "react";
+import type { AssistantState } from "../../context/react/AssistantApiContext";
+type UseAssistantIfProps = {
+    condition: AssistantIf.Condition;
+};
+export declare namespace AssistantIf {
+    type Props = PropsWithChildren<UseAssistantIfProps>;
+    type Condition = (state: AssistantState) => boolean;
+}
+export declare const AssistantIf: FC<AssistantIf.Props>;
+export {};
+//# sourceMappingURL=AssistantIf.d.ts.map
